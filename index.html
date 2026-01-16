@@ -2,96 +2,54 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- 关键：viewport-fit=cover 确保页面充满全屏，包括刘海区域 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>我的财务报表 Pro</title>
+    <title>我的财务报表 Pro - 升级版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* --- 1. 彻底隐藏滚动条 --- */
+        /* --- 基础样式与iOS适配 --- */
         html, body {
             -ms-overflow-style: none;
             scrollbar-width: none;
             min-height: 100vh;
-            /* 修复 iOS Safari 橡皮筋回弹露白问题 */
             background-color: #F2F2F7; 
         }
-        ::-webkit-scrollbar {
-            display: none;
-            width: 0;
-            height: 0;
-        }
-
-        /* iOS 字体优化 */
+        ::-webkit-scrollbar { display: none; width: 0; height: 0; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
             color: #1C1C1E;
             -webkit-tap-highlight-color: transparent;
             padding-bottom: env(safe-area-inset-bottom);
         }
-
-        /* --- 2. 顶部导航栏适配修复 (iPhone 12 Mini) --- */
         .glass-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 50;
+            position: fixed; top: 0; left: 0; right: 0; z-index: 50;
             background: rgba(242, 242, 247, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border-bottom: 0.5px solid rgba(0,0,0,0.1);
-            
-            /* 关键修复：利用 padding-top 把内容顶下来，避开刘海 */
-            /* env(safe-area-inset-top) 获取刘海高度，额外加 10px 增加呼吸感 */
             padding-top: calc(env(safe-area-inset-top) + 12px);
             padding-bottom: 12px;
         }
-
-        /* --- 3. 日期选择器修复 (透明覆盖层法) --- */
-        .date-trigger-wrapper {
-            position: relative; /* 建立定位基准 */
-            display: inline-block;
-        }
-        
-        /* 这个输入框会盖在文字上面，透明，用户点文字其实是点到了它 */
+        .date-trigger-wrapper { position: relative; display: inline-block; }
         .native-date-input {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0; /* 完全透明 */
-            z-index: 10; /* 确保在文字上层 */
-            cursor: pointer;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; z-index: 10; cursor: pointer;
         }
-
-        /* 卡片样式 */
-        .ios-card-static {
-            background: #FFFFFF;
-            border-radius: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
+        .ios-card-static { background: #FFFFFF; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .ios-card {
-            background: #FFFFFF;
-            border-radius: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            background: #FFFFFF; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             transition: transform 0.1s;
         }
         .ios-card:active { transform: scale(0.98); }
-
-        /* 内容区域的顶部避让 */
-        #main-content {
-            /* 这里的 110px 是估算的 Header 高度，确保内容不被 Header 遮挡 */
-            /* iOS 上刘海高度约为 44-50px，加上内容的 padding */
-            padding-top: calc(env(safe-area-inset-top) + 100px);
-        }
+        #main-content { padding-top: calc(env(safe-area-inset-top) + 100px); }
         
-        /* 弹窗动画 */
         .modal-enter { animation: slideUp 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards; }
         .modal-overlay { transition: opacity 0.3s ease; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        /* 细分进度条样式 */
+        .sub-progress-bg { background-color: #F2F2F7; border-radius: 4px; height: 6px; overflow: hidden; }
+        .sub-progress-fill { height: 100%; border-radius: 4px; }
     </style>
 </head>
 <body class="antialiased">
@@ -99,8 +57,6 @@
     <!-- 顶部导航栏 -->
     <div class="glass-nav">
         <div class="px-5 flex justify-between items-end">
-            <!-- 左侧：日期选择区 -->
-            <!-- 修复逻辑：relative 父容器包裹文字和透明 input -->
             <div class="date-trigger-wrapper">
                 <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Total Balance</p>
                 <div class="flex items-center gap-2">
@@ -109,11 +65,8 @@
                         <i class="fas fa-chevron-down text-[10px] text-gray-600"></i>
                     </div>
                 </div>
-                <!-- 真正的 Input，透明覆盖在上方 -->
                 <input type="month" class="native-date-input" onchange="handleDateChange(this)">
             </div>
-            
-            <!-- 右侧可以放头像或设置，占位保持布局平衡 -->
             <div class="h-8 w-8"></div> 
         </div>
     </div>
@@ -128,13 +81,10 @@
                     <p class="text-sm font-medium text-gray-500 mb-1">本月结余 (Cash Flow)</p>
                     <p class="text-4xl font-bold text-black tracking-tight" id="cash-flow-display">¥0.00</p>
                 </div>
-                
-                <!-- 这个图标按钮也可以加上日期选择功能，同样的透明覆盖法 -->
                 <div class="relative bg-blue-50 h-12 w-12 rounded-full flex items-center justify-center text-blue-500 shadow-sm z-20">
                     <i class="far fa-calendar-alt text-lg"></i>
                     <input type="month" class="native-date-input rounded-full" onchange="handleDateChange(this)">
                 </div>
-                
                 <div class="absolute -right-6 -bottom-6 h-24 w-24 bg-blue-400 opacity-5 rounded-full blur-xl"></div>
             </div>
         </section>
@@ -177,42 +127,76 @@
             </div>
         </section>
 
-        <!-- 资产管理 -->
+        <!-- 资产管理 (修改后：细分结构) -->
         <section>
             <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-4 mb-2">资产管理</h2>
             <div class="ios-card-static overflow-hidden">
-                <div onclick="showHistory('asset')" class="p-4 flex items-center justify-between border-b border-gray-100 active:bg-gray-50 transition-colors">
-                    <div class="flex items-center gap-3">
-                        <div class="bg-blue-100 p-2 rounded-lg text-blue-600"><i class="fas fa-wallet"></i></div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-900">总资产</p>
-                            <div class="w-24 h-1.5 bg-gray-100 rounded-full mt-1.5 overflow-hidden">
-                                <div class="bg-blue-500 h-full rounded-full" style="width: 100%"></div>
-                            </div>
+                
+                <!-- 资产板块 -->
+                <div onclick="showHistory('asset')" class="p-4 border-b border-gray-100 active:bg-gray-50 transition-colors">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <div class="bg-blue-100 p-1.5 rounded text-blue-600 text-xs"><i class="fas fa-wallet"></i></div>
+                            <span class="text-sm font-bold text-gray-900">总资产</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg font-bold text-black" id="total-assets">¥0</span>
+                            <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-lg font-bold text-black" id="total-assets">¥0</span>
-                        <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                    
+                    <!-- 细分：流动 vs 固定 -->
+                    <div class="grid grid-cols-2 gap-4 mt-3">
+                        <div>
+                            <div class="flex justify-between text-[10px] text-gray-500 mb-1">
+                                <span>流动 (现金/存款)</span>
+                                <span id="val-asset-current">¥0</span>
+                            </div>
+                            <div class="sub-progress-bg"><div id="bar-asset-current" class="sub-progress-fill bg-blue-400" style="width:0%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] text-gray-500 mb-1">
+                                <span>非流动 (房/车)</span>
+                                <span id="val-asset-fixed">¥0</span>
+                            </div>
+                            <div class="sub-progress-bg"><div id="bar-asset-fixed" class="sub-progress-fill bg-blue-800" style="width:0%"></div></div>
+                        </div>
                     </div>
                 </div>
 
-                <div onclick="showHistory('liability')" class="p-4 flex items-center justify-between border-b border-gray-100 active:bg-gray-50 transition-colors">
-                    <div class="flex items-center gap-3">
-                        <div class="bg-red-100 p-2 rounded-lg text-red-500"><i class="fas fa-credit-card"></i></div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-900">总负债</p>
-                            <div class="w-24 h-1.5 bg-gray-100 rounded-full mt-1.5 overflow-hidden">
-                                <div id="liability-bar" class="bg-red-500 h-full rounded-full progress-bar" style="width: 0%"></div>
-                            </div>
+                <!-- 负债板块 -->
+                <div onclick="showHistory('liability')" class="p-4 border-b border-gray-100 active:bg-gray-50 transition-colors">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <div class="bg-red-100 p-1.5 rounded text-red-500 text-xs"><i class="fas fa-credit-card"></i></div>
+                            <span class="text-sm font-bold text-gray-900">总负债</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg font-bold text-black" id="total-liabilities">¥0</span>
+                            <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-lg font-bold text-black" id="total-liabilities">¥0</span>
-                        <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+
+                    <!-- 细分：短期 vs 长期 -->
+                    <div class="grid grid-cols-2 gap-4 mt-3">
+                        <div>
+                            <div class="flex justify-between text-[10px] text-gray-500 mb-1">
+                                <span>短期 (信用卡/花呗)</span>
+                                <span id="val-debt-short">¥0</span>
+                            </div>
+                            <div class="sub-progress-bg"><div id="bar-debt-short" class="sub-progress-fill bg-red-400" style="width:0%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] text-gray-500 mb-1">
+                                <span>长期 (房/车贷)</span>
+                                <span id="val-debt-long">¥0</span>
+                            </div>
+                            <div class="sub-progress-bg"><div id="bar-debt-long" class="sub-progress-fill bg-red-800" style="width:0%"></div></div>
+                        </div>
                     </div>
                 </div>
 
+                <!-- 净资产 -->
                 <div class="p-4 bg-gray-50 flex justify-between items-center">
                     <span class="text-sm font-medium text-gray-500">净资产 (Net Worth)</span>
                     <span class="text-xl font-bold text-gray-900" id="net-worth">¥0</span>
@@ -257,7 +241,7 @@
         </div>
     </div>
 
-    <!-- 弹窗：记账 -->
+    <!-- 弹窗：记账 (已修改分类逻辑) -->
     <div id="modal-transaction" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/40 backdrop-blur-[2px] modal-overlay" onclick="closeModal('transaction')"></div>
         <div class="absolute bottom-0 w-full bg-white rounded-t-[24px] p-6 pb-6 modal-enter shadow-2xl" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
@@ -283,15 +267,7 @@
                      <label class="text-xs text-gray-400 font-medium ml-1">分类</label>
                     <div class="grid grid-cols-3 gap-3 mt-2">
                         <select id="t-category" class="col-span-3 bg-gray-50 text-lg rounded-xl px-4 py-3 outline-none appearance-none border border-gray-100 text-gray-700 font-medium">
-                            <option value="餐饮">🍔 餐饮美食</option>
-                            <option value="交通">🚗 交通出行</option>
-                            <option value="购物">🛍️ 购物消费</option>
-                            <option value="居住">🏠 居住缴费</option>
-                            <option value="娱乐">🎮 休闲娱乐</option>
-                            <option value="医疗">💊 医疗健康</option>
-                            <option value="工资">💰 工资收入</option>
-                            <option value="理财">📈 投资理财</option>
-                            <option value="其他">📝 其他</option>
+                            <!-- JS动态填充 -->
                         </select>
                     </div>
                 </div>
@@ -301,7 +277,7 @@
         </div>
     </div>
 
-    <!-- 弹窗：资产 -->
+    <!-- 弹窗：资产录入 (已新增二级分类) -->
     <div id="modal-asset_input" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/40 backdrop-blur-[2px] modal-overlay" onclick="closeModal('asset_input')"></div>
         <div class="absolute bottom-0 w-full bg-white rounded-t-[24px] p-6 pb-6 modal-enter shadow-2xl" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
@@ -310,15 +286,35 @@
             </div>
             
             <div class="space-y-5">
-                <h3 class="text-xl font-bold text-center">新增项目</h3>
+                <h3 class="text-xl font-bold text-center">资产/负债录入</h3>
                 
+                <!-- 资产类型 -->
                 <div class="flex bg-gray-100 p-1 rounded-xl">
                     <button onclick="setAssetType('asset')" id="btn-asset" class="flex-1 py-2 rounded-lg text-[15px] font-medium shadow-sm bg-white text-black transition-all">资产</button>
                     <button onclick="setAssetType('liability')" id="btn-liability" class="flex-1 py-2 rounded-lg text-[15px] font-medium text-gray-500 transition-all">负债</button>
                 </div>
 
+                <!-- 二级分类 (Subtype) -->
+                <div>
+                    <label class="text-xs text-gray-400 font-medium ml-1 mb-1 block">类型性质</label>
+                    <div class="flex gap-3">
+                        <label class="flex-1 cursor-pointer">
+                            <input type="radio" name="asset_subtype" value="type1" checked class="hidden peer">
+                            <div class="py-2.5 text-center rounded-lg border border-gray-200 text-gray-500 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-600 transition-all font-medium text-sm" id="subtype-label-1">
+                                流动资产
+                            </div>
+                        </label>
+                        <label class="flex-1 cursor-pointer">
+                            <input type="radio" name="asset_subtype" value="type2" class="hidden peer">
+                            <div class="py-2.5 text-center rounded-lg border border-gray-200 text-gray-500 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-600 transition-all font-medium text-sm" id="subtype-label-2">
+                                非流动资产
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
                 <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                    <input type="text" id="a-name" class="w-full bg-transparent outline-none text-lg font-medium placeholder-gray-400" placeholder="项目名称 (如: 招行储蓄卡)">
+                    <input type="text" id="a-name" class="w-full bg-transparent outline-none text-lg font-medium placeholder-gray-400" placeholder="项目名称 (如: 招行卡/房贷)">
                 </div>
 
                 <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 flex items-center">
@@ -339,14 +335,32 @@
         let currentAssetType = 'asset';
         let expenseChartInstance = null;
 
+        // 分类定义
+        const categories = {
+            expense: [
+                {val: '餐饮', label: '🍔 餐饮美食'},
+                {val: '交通', label: '🚗 交通出行'},
+                {val: '购物', label: '🛍️ 购物消费'},
+                {val: '居住', label: '🏠 居住缴费'},
+                {val: '娱乐', label: '🎮 休闲娱乐'},
+                {val: '医疗', label: '💊 医疗健康'},
+                {val: '其他', label: '📝 其他支出'}
+            ],
+            income: [
+                {val: '工资', label: '💰 工资收入'},
+                {val: '理财', label: '📈 投资理财'},
+                {val: '其他', label: '📝 其他收入'}
+            ]
+        };
+
         window.onload = function() {
-            const savedData = localStorage.getItem('myFinanceData_v2');
+            const savedData = localStorage.getItem('myFinanceData_v3'); // Key updated for versioning
             if (savedData) financeData = JSON.parse(savedData);
             
+            updateCategoryOptions('expense'); // Init select
             updateUI();
         };
 
-        // 移除原有的 openDatePicker 函数，因为现在是原生点击
         function handleDateChange(input) {
             if(input.value) {
                 const parts = input.value.split('-');
@@ -356,18 +370,21 @@
         }
 
         function updateUI() {
-            let totals = { income: 0, expense: 0, asset: 0, liability: 0 };
+            let totals = { 
+                income: 0, expense: 0, 
+                asset: 0, liability: 0,
+                // 新增细分统计
+                assetCurrent: 0, assetFixed: 0,
+                debtShort: 0, debtLong: 0
+            };
             let catExp = {};
             const vYear = viewDate.getFullYear();
             const vMonth = viewDate.getMonth();
 
             document.getElementById('current-date').innerText = `${vYear}年${vMonth + 1}月`;
-
-            // 同步隐藏的日期 Input 的值，确保下次打开是当前选中的月份
-            // 注意：Safari 可能需要这个值来高亮当前选中的月份
+            
             const dateStr = `${vYear}-${(vMonth + 1).toString().padStart(2, '0')}`;
-            const dateInputs = document.querySelectorAll('.native-date-input');
-            dateInputs.forEach(input => input.value = dateStr);
+            document.querySelectorAll('.native-date-input').forEach(input => input.value = dateStr);
 
             const today = new Date();
             if (vYear === today.getFullYear() && vMonth === today.getMonth()) {
@@ -377,37 +394,59 @@
             }
 
             financeData.records.forEach(r => {
-                const rDate = new Date(r.date);
+                const amt = parseFloat(r.amount);
+                
                 if (r.type === 'income' || r.type === 'expense') {
+                    const rDate = new Date(r.date);
                     if (rDate.getFullYear() === vYear && rDate.getMonth() === vMonth) {
-                        totals[r.type] += parseFloat(r.amount);
+                        totals[r.type] += amt;
                         if (r.type === 'expense') {
-                            catExp[r.category] = (catExp[r.category] || 0) + parseFloat(r.amount);
+                            catExp[r.category] = (catExp[r.category] || 0) + amt;
                         }
                     }
-                } else {
-                    totals[r.type] += parseFloat(r.amount);
+                } else if (r.type === 'asset') {
+                    totals.asset += amt;
+                    // 兼容旧数据：如果没有 subtype，默认视为流动资产 (current)
+                    if (!r.subtype || r.subtype === 'current') totals.assetCurrent += amt;
+                    else totals.assetFixed += amt;
+                } else if (r.type === 'liability') {
+                    totals.liability += amt;
+                    // 兼容旧数据：如果没有 subtype，默认视为短期负债 (short)
+                    if (!r.subtype || r.subtype === 'short') totals.debtShort += amt;
+                    else totals.debtLong += amt;
                 }
             });
 
+            // 基础收支
             document.getElementById('total-income').innerText = `¥${totals.income.toFixed(2)}`;
             document.getElementById('total-expense').innerText = `¥${totals.expense.toFixed(2)}`;
-            document.getElementById('total-assets').innerText = `¥${totals.asset.toLocaleString()}`;
-            document.getElementById('total-liabilities').innerText = `¥${totals.liability.toLocaleString()}`;
             
             const cashFlow = totals.income - totals.expense;
             const flowEl = document.getElementById('cash-flow-display');
             flowEl.innerText = `¥${cashFlow.toFixed(2)}`;
             flowEl.className = `text-4xl font-bold tracking-tight ${cashFlow >= 0 ? 'text-black' : 'text-red-500'}`;
 
-            const netWorth = totals.asset - totals.liability;
-            document.getElementById('net-worth').innerText = `¥${netWorth.toLocaleString()}`;
-            
-            const maxVal = Math.max(totals.asset, totals.liability, 1);
-            document.getElementById('liability-bar').style.width = `${(totals.liability / maxVal) * 100}%`;
+            // 资产负债展示
+            document.getElementById('total-assets').innerText = `¥${totals.asset.toLocaleString()}`;
+            document.getElementById('total-liabilities').innerText = `¥${totals.liability.toLocaleString()}`;
+            document.getElementById('net-worth').innerText = `¥${(totals.asset - totals.liability).toLocaleString()}`;
+
+            // 细分展示 (DOM更新)
+            document.getElementById('val-asset-current').innerText = `¥${totals.assetCurrent.toLocaleString()}`;
+            document.getElementById('val-asset-fixed').innerText = `¥${totals.assetFixed.toLocaleString()}`;
+            document.getElementById('val-debt-short').innerText = `¥${totals.debtShort.toLocaleString()}`;
+            document.getElementById('val-debt-long').innerText = `¥${totals.debtLong.toLocaleString()}`;
+
+            // 进度条逻辑
+            const maxAsset = Math.max(totals.asset, 1);
+            const maxDebt = Math.max(totals.liability, 1);
+            document.getElementById('bar-asset-current').style.width = `${(totals.assetCurrent / maxAsset)*100}%`;
+            document.getElementById('bar-asset-fixed').style.width = `${(totals.assetFixed / maxAsset)*100}%`;
+            document.getElementById('bar-debt-short').style.width = `${(totals.debtShort / maxDebt)*100}%`;
+            document.getElementById('bar-debt-long').style.width = `${(totals.debtLong / maxDebt)*100}%`;
 
             updateChart(catExp);
-            localStorage.setItem('myFinanceData_v2', JSON.stringify(financeData));
+            localStorage.setItem('myFinanceData_v3', JSON.stringify(financeData));
         }
 
         function updateChart(data) {
@@ -432,14 +471,9 @@
                     }]
                 },
                 options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    plugins: { 
-                        legend: { display: false },
-                        tooltip: { enabled: !isEmpty }
-                    }, 
-                    cutout: '75%',
-                    animation: { animateScale: true, animateRotate: true }
+                    responsive: true, maintainAspectRatio: false, 
+                    plugins: { legend: { display: false }, tooltip: { enabled: !isEmpty } }, 
+                    cutout: '75%', animation: { animateScale: true, animateRotate: true }
                 }
             });
         }
@@ -463,11 +497,7 @@
             });
 
             if (filtered.length === 0) {
-                listEl.innerHTML = `
-                    <div class="flex flex-col items-center justify-center mt-20 opacity-50">
-                        <i class="fas fa-folder-open text-4xl mb-3 text-gray-300"></i>
-                        <p class="text-sm text-gray-400">暂无相关记录</p>
-                    </div>`;
+                listEl.innerHTML = `<div class="flex flex-col items-center justify-center mt-20 opacity-50"><i class="fas fa-folder-open text-4xl mb-3 text-gray-300"></i><p class="text-sm text-gray-400">暂无相关记录</p></div>`;
             } else {
                 filtered.reverse().forEach(r => {
                     const div = document.createElement('div');
@@ -476,13 +506,18 @@
                     const isPositive = r.type==='income'||r.type==='asset';
                     const sign = r.type==='income' ? '+' : (r.type==='expense' ? '-' : '');
                     
+                    // 显示子类型标签（针对资产负债）
+                    let subLabel = "";
+                    if(r.type === 'asset') subLabel = (r.subtype === 'fixed') ? ' <span class="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded ml-1">非流动</span>' : ' <span class="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded ml-1">流动</span>';
+                    if(r.type === 'liability') subLabel = (r.subtype === 'long') ? ' <span class="text-[10px] bg-red-50 text-red-500 px-1.5 py-0.5 rounded ml-1">长期</span>' : ' <span class="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded ml-1">短期</span>';
+
                     div.innerHTML = `
                         <div class="flex items-center gap-3">
                             <div class="h-10 w-10 rounded-full ${isPositive ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-500'} flex items-center justify-center text-sm">
-                                <i class="fas ${getIcon(r.category)}"></i>
+                                <i class="fas ${getIcon(r.category || '默认')}"></i>
                             </div>
                             <div>
-                                <p class="font-bold text-gray-900 text-[15px]">${r.category || r.name}</p>
+                                <p class="font-bold text-gray-900 text-[15px]">${r.category || r.name} ${subLabel}</p>
                                 <p class="text-xs text-gray-400 mt-0.5">${r.date.split('T')[0]}</p>
                             </div>
                         </div>
@@ -501,13 +536,14 @@
             const map = {
                 '餐饮': 'fa-utensils', '交通': 'fa-car', '购物': 'fa-shopping-bag',
                 '居住': 'fa-home', '工资': 'fa-coins', '其他': 'fa-sticky-note',
-                '娱乐': 'fa-gamepad', '医疗': 'fa-briefcase-medical', '理财': 'fa-chart-line'
+                '娱乐': 'fa-gamepad', '医疗': 'fa-briefcase-medical', '理财': 'fa-chart-line',
+                '默认': 'fa-tag'
             };
             return map[category] || 'fa-tag';
         }
 
         function deleteRecord(id, type) {
-            if (confirm('⚠️ 确定要删除这条记录吗？\n此操作无法撤销。')) {
+            if (confirm('⚠️ 确定要删除这条记录吗？')) {
                 financeData.records = financeData.records.filter(r => r.id !== id);
                 updateUI();
                 showHistory(type); 
@@ -534,9 +570,23 @@
                 const amt = document.getElementById('a-amount').value;
                 const name = document.getElementById('a-name').value;
                 if (!amt || !name) return alert('请填写完整信息');
+                
+                // 获取 Subtype (二级分类)
+                const radios = document.getElementsByName('asset_subtype');
+                let subVal = 'type1'; // default
+                for(let r of radios) { if(r.checked) subVal = r.value; }
+
                 record.type = currentAssetType;
                 record.amount = amt;
                 record.name = name;
+                
+                // 映射 radio value 到实际 subtype 字符串
+                if (currentAssetType === 'asset') {
+                    record.subtype = (subVal === 'type1') ? 'current' : 'fixed';
+                } else {
+                    record.subtype = (subVal === 'type1') ? 'short' : 'long';
+                }
+
                 document.getElementById('a-amount').value = '';
                 document.getElementById('a-name').value = '';
                 closeModal('asset_input');
@@ -548,20 +598,46 @@
         function openModal(t) { document.getElementById(`modal-${t}`).classList.remove('hidden'); }
         function closeModal(t) { document.getElementById(`modal-${t}`).classList.add('hidden'); }
 
+        // 记账：切换收入/支出时更新分类
         function setTransType(t) {
             currentTransType = t;
             const activeClass = "flex-1 py-2 rounded-lg text-[15px] font-medium shadow-sm bg-white text-black transition-all";
             const inactiveClass = "flex-1 py-2 rounded-lg text-[15px] font-medium text-gray-500 transition-all";
             document.getElementById('btn-expense').className = t==='expense'?activeClass:inactiveClass;
             document.getElementById('btn-income').className = t==='income'?activeClass:inactiveClass;
+            updateCategoryOptions(t);
         }
 
+        function updateCategoryOptions(type) {
+            const select = document.getElementById('t-category');
+            select.innerHTML = '';
+            const list = categories[type];
+            list.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.val;
+                opt.innerText = c.label;
+                select.appendChild(opt);
+            });
+        }
+
+        // 资产录入：切换资产/负债时更新二级分类文案
         function setAssetType(t) {
             currentAssetType = t;
             const activeClass = "flex-1 py-2 rounded-lg text-[15px] font-medium shadow-sm bg-white text-black transition-all";
             const inactiveClass = "flex-1 py-2 rounded-lg text-[15px] font-medium text-gray-500 transition-all";
             document.getElementById('btn-asset').className = t==='asset'?activeClass:inactiveClass;
             document.getElementById('btn-liability').className = t==='liability'?activeClass:inactiveClass;
+
+            const l1 = document.getElementById('subtype-label-1');
+            const l2 = document.getElementById('subtype-label-2');
+            
+            if (t === 'asset') {
+                l1.innerText = "流动资产 (现金)";
+                l2.innerText = "非流动资产 (房车)";
+            } else {
+                l1.innerText = "短期负债 (<1年)";
+                l2.innerText = "长期负债 (>1年)";
+            }
         }
 
         function exportData() {
