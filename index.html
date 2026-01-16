@@ -2,128 +2,144 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <!-- 关键：viewport-fit=cover 确保页面充满全屏，包括刘海区域 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>我的财务报表 Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 全局隐藏滚动条 (兼容 Chrome, Safari, Firefox, IE) */
+        /* --- 1. 彻底隐藏滚动条 --- */
         html, body {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            min-height: 100vh;
+            /* 修复 iOS Safari 橡皮筋回弹露白问题 */
+            background-color: #F2F2F7; 
         }
         ::-webkit-scrollbar {
-            display: none; /* Chrome, Safari */
+            display: none;
             width: 0;
             height: 0;
         }
 
-        /* iOS 系统字体栈 */
+        /* iOS 字体优化 */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
-            background-color: #F2F2F7;
             color: #1C1C1E;
             -webkit-tap-highlight-color: transparent;
-            /* 确保页面占满全屏，防止底部回弹露白 */
-            min-height: 100vh;
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
-        /* --- 修复问题2：定义安全区域 --- */
-        .pt-safe-top {
-            padding-top: env(safe-area-inset-top, 20px);
-        }
-        .pb-safe-bottom {
-            padding-bottom: env(safe-area-inset-bottom, 20px);
-        }
-
-        /* 顶部模糊导航栏优化 */
+        /* --- 2. 顶部导航栏适配修复 (iPhone 12 Mini) --- */
         .glass-nav {
-            background: rgba(242, 242, 247, 0.85); /* 稍微增加不透明度 */
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 0.5px solid rgba(0,0,0,0.1);
-            /* 关键：确保导航栏本身的高度包含安全区域 */
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            z-index: 40;
+            z-index: 50;
+            background: rgba(242, 242, 247, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 0.5px solid rgba(0,0,0,0.1);
+            
+            /* 关键修复：利用 padding-top 把内容顶下来，避开刘海 */
+            /* env(safe-area-inset-top) 获取刘海高度，额外加 10px 增加呼吸感 */
+            padding-top: calc(env(safe-area-inset-top) + 12px);
+            padding-bottom: 12px;
         }
 
-        /* iOS 风格卡片 */
-        .ios-card, .ios-card-static {
+        /* --- 3. 日期选择器修复 (透明覆盖层法) --- */
+        .date-trigger-wrapper {
+            position: relative; /* 建立定位基准 */
+            display: inline-block;
+        }
+        
+        /* 这个输入框会盖在文字上面，透明，用户点文字其实是点到了它 */
+        .native-date-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0; /* 完全透明 */
+            z-index: 10; /* 确保在文字上层 */
+            cursor: pointer;
+        }
+
+        /* 卡片样式 */
+        .ios-card-static {
             background: #FFFFFF;
             border-radius: 16px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            overflow: hidden;
-            transition: transform 0.1s ease;
+        }
+        .ios-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: transform 0.1s;
         }
         .ios-card:active { transform: scale(0.98); }
 
-        /* 底部弹窗动画 */
+        /* 内容区域的顶部避让 */
+        #main-content {
+            /* 这里的 110px 是估算的 Header 高度，确保内容不被 Header 遮挡 */
+            /* iOS 上刘海高度约为 44-50px，加上内容的 padding */
+            padding-top: calc(env(safe-area-inset-top) + 100px);
+        }
+        
+        /* 弹窗动画 */
         .modal-enter { animation: slideUp 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards; }
         .modal-overlay { transition: opacity 0.3s ease; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-        /* --- 修复问题3：日期选择器隐藏方式 --- */
-        /* 不要用 visibility: hidden，改用 opacity: 0 并设为 absolute */
-        #date-picker-input { 
-            position: absolute; 
-            opacity: 0; 
-            top: 0; 
-            left: 0; 
-            width: 1px; 
-            height: 1px; 
-            pointer-events: none; /* 防止遮挡 */
-            z-index: -1;
-        }
-        
-        .progress-bar { transition: width 0.5s ease-out; }
-        
-        /* 针对小屏优化内容间距 */
-        #main-content {
-            /* 使用 calc 动态计算顶部留白：安全区域 + 导航栏大致高度 + 间隙 */
-            padding-top: calc(env(safe-area-inset-top) + 80px);
-        }
     </style>
 </head>
-<body class="antialiased pb-safe-bottom">
+<body class="antialiased">
 
     <!-- 顶部导航栏 -->
-    <!-- 移除原本的 pt-12，改用 flex 布局控制高度，适配更精准 -->
-    <div class="glass-nav pt-safe-top">
-        <div class="px-5 pb-3 pt-2 flex justify-between items-end h-[80px]"> <!-- 固定内部高度 -->
-            <div onclick="openDatePicker()" class="cursor-pointer">
+    <div class="glass-nav">
+        <div class="px-5 flex justify-between items-end">
+            <!-- 左侧：日期选择区 -->
+            <!-- 修复逻辑：relative 父容器包裹文字和透明 input -->
+            <div class="date-trigger-wrapper">
                 <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Total Balance</p>
                 <div class="flex items-center gap-2">
-                    <h1 class="text-3xl font-bold tracking-tight text-black" id="current-date">加载中...</h1>
+                    <h1 class="text-3xl font-bold tracking-tight text-black" id="current-date">...</h1>
                     <div class="bg-gray-200 rounded-full h-6 w-6 flex items-center justify-center">
                         <i class="fas fa-chevron-down text-[10px] text-gray-600"></i>
                     </div>
                 </div>
+                <!-- 真正的 Input，透明覆盖在上方 -->
+                <input type="month" class="native-date-input" onchange="handleDateChange(this)">
             </div>
-            <!-- 输入框位置调整，虽然不可见但必须存在 -->
-            <input type="month" id="date-picker-input" onchange="handleDateChange(this)">
+            
+            <!-- 右侧可以放头像或设置，占位保持布局平衡 -->
+            <div class="h-8 w-8"></div> 
         </div>
     </div>
 
-    <!-- 主内容区：已通过 CSS 中的 #main-content 调整了 padding-top -->
+    <!-- 主内容区 -->
     <div id="main-content" class="px-4 pb-24 space-y-6">
         
+        <!-- 本月结余卡片 -->
         <section>
             <div class="ios-card-static p-5 flex justify-between items-center relative overflow-hidden">
                 <div class="z-10">
                     <p class="text-sm font-medium text-gray-500 mb-1">本月结余 (Cash Flow)</p>
                     <p class="text-4xl font-bold text-black tracking-tight" id="cash-flow-display">¥0.00</p>
                 </div>
-                <div class="bg-blue-50 h-12 w-12 rounded-full flex items-center justify-center text-blue-500 shadow-sm" onclick="openDatePicker()">
+                
+                <!-- 这个图标按钮也可以加上日期选择功能，同样的透明覆盖法 -->
+                <div class="relative bg-blue-50 h-12 w-12 rounded-full flex items-center justify-center text-blue-500 shadow-sm z-20">
                     <i class="far fa-calendar-alt text-lg"></i>
+                    <input type="month" class="native-date-input rounded-full" onchange="handleDateChange(this)">
                 </div>
+                
                 <div class="absolute -right-6 -bottom-6 h-24 w-24 bg-blue-400 opacity-5 rounded-full blur-xl"></div>
             </div>
         </section>
 
+        <!-- 收支分析 -->
         <section>
             <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-4 mb-2">收支分析</h2>
             <div class="ios-card-static p-0">
@@ -161,6 +177,7 @@
             </div>
         </section>
 
+        <!-- 资产管理 -->
         <section>
             <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-4 mb-2">资产管理</h2>
             <div class="ios-card-static overflow-hidden">
@@ -207,6 +224,7 @@
             </div>
         </section>
 
+        <!-- 底部功能 -->
         <section>
             <div class="grid grid-cols-2 gap-4">
                 <button onclick="exportData()" class="ios-card p-4 flex flex-col items-center justify-center gap-2 text-gray-600 active:scale-95 transition-transform">
@@ -223,27 +241,26 @@
         </section>
     </div>
 
-    <!-- 弹窗部分保持不变，仅优化 safe-area 样式 -->
+    <!-- 弹窗：历史记录 -->
     <div id="modal-history" class="fixed inset-0 z-[60] hidden">
         <div class="absolute inset-0 bg-black/40 backdrop-blur-[2px] modal-overlay" onclick="closeModal('history')"></div>
         <div class="absolute bottom-0 w-full bg-[#F2F2F7] rounded-t-[24px] h-[85vh] flex flex-col modal-enter shadow-2xl">
             <div class="w-full flex justify-center pt-3 pb-1" onclick="closeModal('history')">
                 <div class="w-12 h-1.5 bg-gray-300 rounded-full"></div>
             </div>
-            
             <div class="px-5 py-3 flex justify-between items-center bg-[#F2F2F7] border-b border-gray-200/50">
                 <h3 class="text-[22px] font-bold text-black" id="history-title">记录</h3>
                 <button onclick="closeModal('history')" class="bg-gray-200 h-8 w-8 rounded-full flex items-center justify-center text-gray-500 font-bold"><i class="fas fa-times"></i></button>
             </div>
-            
-            <div id="history-list" class="flex-1 overflow-y-auto p-4 space-y-3 pb-safe-bottom">
+            <div id="history-list" class="flex-1 overflow-y-auto p-4 space-y-3" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
             </div>
         </div>
     </div>
 
+    <!-- 弹窗：记账 -->
     <div id="modal-transaction" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/40 backdrop-blur-[2px] modal-overlay" onclick="closeModal('transaction')"></div>
-        <div class="absolute bottom-0 w-full bg-white rounded-t-[24px] p-6 pb-safe-bottom modal-enter shadow-2xl">
+        <div class="absolute bottom-0 w-full bg-white rounded-t-[24px] p-6 pb-6 modal-enter shadow-2xl" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
             <div class="w-full flex justify-center -mt-2 mb-6">
                 <div class="w-12 h-1.5 bg-gray-200 rounded-full"></div>
             </div>
@@ -284,9 +301,10 @@
         </div>
     </div>
 
+    <!-- 弹窗：资产 -->
     <div id="modal-asset_input" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/40 backdrop-blur-[2px] modal-overlay" onclick="closeModal('asset_input')"></div>
-        <div class="absolute bottom-0 w-full bg-white rounded-t-[24px] p-6 pb-safe-bottom modal-enter shadow-2xl">
+        <div class="absolute bottom-0 w-full bg-white rounded-t-[24px] p-6 pb-6 modal-enter shadow-2xl" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
             <div class="w-full flex justify-center -mt-2 mb-6">
                 <div class="w-12 h-1.5 bg-gray-200 rounded-full"></div>
             </div>
@@ -325,25 +343,10 @@
             const savedData = localStorage.getItem('myFinanceData_v2');
             if (savedData) financeData = JSON.parse(savedData);
             
-            const year = viewDate.getFullYear();
-            const month = (viewDate.getMonth() + 1).toString().padStart(2, '0');
-            document.getElementById('date-picker-input').value = `${year}-${month}`;
-            
             updateUI();
         };
 
-        function openDatePicker() {
-            // iOS 上，如果 input 被完全隐藏 (visibility:hidden 或 display:none)，click() 会失效
-            // 现在我们用 opacity:0，click() 应该能正常触发
-            try {
-                // 尝试新版 API
-                document.getElementById('date-picker-input').showPicker();
-            } catch (e) {
-                // 回退到模拟点击
-                document.getElementById('date-picker-input').click();
-            }
-        }
-
+        // 移除原有的 openDatePicker 函数，因为现在是原生点击
         function handleDateChange(input) {
             if(input.value) {
                 const parts = input.value.split('-');
@@ -359,6 +362,12 @@
             const vMonth = viewDate.getMonth();
 
             document.getElementById('current-date').innerText = `${vYear}年${vMonth + 1}月`;
+
+            // 同步隐藏的日期 Input 的值，确保下次打开是当前选中的月份
+            // 注意：Safari 可能需要这个值来高亮当前选中的月份
+            const dateStr = `${vYear}-${(vMonth + 1).toString().padStart(2, '0')}`;
+            const dateInputs = document.querySelectorAll('.native-date-input');
+            dateInputs.forEach(input => input.value = dateStr);
 
             const today = new Date();
             if (vYear === today.getFullYear() && vMonth === today.getMonth()) {
