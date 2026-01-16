@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>我的财务报表 Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif;
+            background-color: #F2F2F7;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        html, body { height: 100%; overflow: hidden; }
+        #main-content { height: calc(100% - 60px); overflow-y: auto; padding-bottom: 100px; }
+        /* 列表滑出动画 */
+        .animate-slide-up { animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="pt-12 pb-4 px-6 bg-white bg-opacity-90 backdrop-blur-md sticky top-0 z-10 border-b border-gray-200">
+        <h1 class="text-3xl font-bold tracking-tight text-black">财务概览</h1>
+        <p class="text-sm text-gray-500 mt-1" id="current-date"></p>
+    </div>
+
+    <div id="main-content" class="px-5 pt-6 space-y-6">
+        <section>
+            <h2 class="text-lg font-semibold mb-3 text-gray-700 ml-1">现金流 (本月储蓄)</h2>
+            <div class="glass-card rounded-2xl p-6 flex justify-between items-center">
+                <div>
+                    <p class="text-sm text-gray-500">本月结余</p>
+                    <p class="text-3xl font-bold text-blue-600 mt-1" id="cash-flow-display">¥0.00</p>
+                </div>
+                <div class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                    <i class="fas fa-wallet text-xl"></i>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-lg font-semibold mb-3 text-gray-700 ml-1">收支表 (点击金额看明细)</h2>
+            <div class="glass-card rounded-2xl p-5">
+                <div class="flex justify-between mb-4">
+                    <div class="text-center w-1/2 border-r border-gray-200 active:bg-gray-50 rounded-l-xl" onclick="showHistory('income')">
+                        <p class="text-xs text-gray-500">总收入 <i class="fas fa-chevron-right text-[8px]"></i></p>
+                        <p class="text-lg font-bold text-green-500" id="total-income">¥0</p>
+                    </div>
+                    <div class="text-center w-1/2 active:bg-gray-50 rounded-r-xl" onclick="showHistory('expense')">
+                        <p class="text-xs text-gray-500">总支出 <i class="fas fa-chevron-right text-[8px]"></i></p>
+                        <p class="text-lg font-bold text-red-500" id="total-expense">¥0</p>
+                    </div>
+                </div>
+                <div class="h-44 w-full relative"><canvas id="expenseChart"></canvas></div>
+                <button onclick="openModal('transaction')" class="w-full mt-4 bg-black text-white py-3 rounded-xl font-medium active:scale-95 transition-transform">
+                    <i class="fas fa-plus mr-2"></i> 记一笔
+                </button>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-lg font-semibold mb-3 text-gray-700 ml-1">资产负债 (点击金额看明细)</h2>
+            <div class="glass-card rounded-2xl p-5 space-y-4">
+                <div onclick="showHistory('asset')" class="active:bg-gray-50 p-1 rounded-lg">
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="font-medium">总资产 <i class="fas fa-chevron-right text-[8px]"></i></span>
+                        <span class="text-blue-600 font-bold" id="total-assets">¥0</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5"><div class="bg-blue-500 h-2.5 rounded-full" style="width: 100%"></div></div>
+                </div>
+                <div onclick="showHistory('liability')" class="active:bg-gray-50 p-1 rounded-lg">
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="font-medium">总负债 <i class="fas fa-chevron-right text-[8px]"></i></span>
+                        <span class="text-red-500 font-bold" id="total-liabilities">¥0</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5"><div id="liability-bar" class="bg-red-500 h-2.5 rounded-full" style="width: 0%"></div></div>
+                </div>
+                <div class="pt-3 border-t border-gray-100 flex justify-between items-center">
+                    <span class="text-sm text-gray-500">净资产</span>
+                    <span class="text-xl font-bold text-gray-900" id="net-worth">¥0</span>
+                </div>
+                 <button onclick="openModal('asset_input')" class="w-full mt-2 bg-gray-100 text-gray-800 py-3 rounded-xl font-medium active:scale-95 transition-transform">
+                    <i class="fas fa-edit mr-2"></i> 新增资产/负债项目
+                </button>
+            </div>
+        </section>
+
+        <section class="pb-10">
+            <div class="glass-card rounded-2xl p-4 flex gap-3 text-center">
+                <button onclick="exportData()" class="flex-1 text-blue-600 text-sm font-medium"><i class="fas fa-download mb-1 block text-lg"></i>备份</button>
+                <button onclick="document.getElementById('importFile').click()" class="flex-1 text-gray-600 text-sm font-medium"><i class="fas fa-upload mb-1 block text-lg"></i>恢复</button>
+                <input type="file" id="importFile" style="display:none" onchange="importData(this)">
+            </div>
+        </section>
+    </div>
+
+    <div id="modal-history" class="fixed inset-0 bg-black bg-opacity-50 z-[60] hidden flex items-end backdrop-blur-sm">
+        <div class="bg-[#F2F2F7] w-full rounded-t-3xl shadow-2xl animate-slide-up flex flex-col" style="height: 80vh;">
+            <div class="p-5 border-b flex justify-between items-center bg-white rounded-t-3xl">
+                <h3 class="text-xl font-bold" id="history-title">明细记录</h3>
+                <button onclick="closeModal('history')" class="bg-gray-100 h-8 w-8 rounded-full flex items-center justify-center"><i class="fas fa-times text-gray-400"></i></button>
+            </div>
+            <div id="history-list" class="flex-1 overflow-y-auto p-5 space-y-3">
+                </div>
+        </div>
+    </div>
+
+    <div id="modal-transaction" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-end backdrop-blur-sm">
+        <div class="bg-white w-full rounded-t-3xl p-6 animate-slide-up">
+            <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-bold">记一笔</h3><button onclick="closeModal('transaction')"><i class="fas fa-times text-gray-400 text-xl"></i></button></div>
+            <div class="space-y-4">
+                <div class="flex bg-gray-100 p-1 rounded-xl">
+                    <button onclick="setTransType('expense')" id="btn-expense" class="flex-1 py-2 rounded-lg text-sm font-medium bg-white shadow-sm">支出</button>
+                    <button onclick="setTransType('income')" id="btn-income" class="flex-1 py-2 rounded-lg text-sm font-medium text-gray-500">收入</button>
+                </div>
+                <input type="number" id="t-amount" class="w-full text-3xl font-bold border-b py-2 outline-none" placeholder="0.00">
+                <select id="t-category" class="w-full bg-gray-50 rounded-xl px-4 py-3 outline-none">
+                    <option value="餐饮">🍔 餐饮美食</option><option value="交通">🚗 交通出行</option><option value="购物">🛍️ 购物消费</option><option value="居住">🏠 居住缴费</option><option value="工资">💰 工资收入</option><option value="其他">📝 其他</option>
+                </select>
+                <button onclick="saveRecord('transaction')" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-asset_input" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-end backdrop-blur-sm">
+        <div class="bg-white w-full rounded-t-3xl p-6 animate-slide-up">
+            <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-bold">新增资产/负债</h3><button onclick="closeModal('asset_input')"><i class="fas fa-times text-gray-400 text-xl"></i></button></div>
+            <div class="space-y-4">
+                <div class="flex bg-gray-100 p-1 rounded-xl">
+                    <button onclick="setAssetType('asset')" id="btn-asset" class="flex-1 py-2 rounded-lg text-sm font-medium bg-white shadow-sm">资产</button>
+                    <button onclick="setAssetType('liability')" id="btn-liability" class="flex-1 py-2 rounded-lg text-sm font-medium text-gray-500">负债</button>
+                </div>
+                <input type="text" id="a-name" class="w-full bg-gray-50 rounded-xl px-4 py-3 outline-none" placeholder="例如：招行存款、信用卡">
+                <input type="number" id="a-amount" class="w-full text-3xl font-bold border-b py-2 outline-none" placeholder="0.00">
+                <button onclick="saveRecord('asset')" class="w-full bg-black text-white py-4 rounded-2xl font-bold text-lg">保存项目</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 数据结构：统一存储所有记录
+        let financeData = {
+            records: [] // {id, type, amount, category, name, date}
+        };
+
+        let currentTransType = 'expense';
+        let currentAssetType = 'asset';
+        let expenseChartInstance = null;
+
+        window.onload = function() {
+            const date = new Date();
+            document.getElementById('current-date').innerText = `${date.getFullYear()}年${date.getMonth() + 1}月`;
+            const savedData = localStorage.getItem('myFinanceData_v2');
+            if (savedData) financeData = JSON.parse(savedData);
+            updateUI();
+        };
+
+        function updateUI() {
+            let totals = { income: 0, expense: 0, asset: 0, liability: 0 };
+            let catExp = {};
+
+            financeData.records.forEach(r => {
+                totals[r.type] += parseFloat(r.amount);
+                if (r.type === 'expense') {
+                    catExp[r.category] = (catExp[r.category] || 0) + parseFloat(r.amount);
+                }
+            });
+
+            document.getElementById('total-income').innerText = `¥${totals.income.toFixed(2)}`;
+            document.getElementById('total-expense').innerText = `¥${totals.expense.toFixed(2)}`;
+            document.getElementById('total-assets').innerText = `¥${totals.asset.toFixed(0)}`;
+            document.getElementById('total-liabilities').innerText = `¥${totals.liability.toFixed(0)}`;
+            
+            const cashFlow = totals.income - totals.expense;
+            const flowEl = document.getElementById('cash-flow-display');
+            flowEl.innerText = `¥${cashFlow.toFixed(2)}`;
+            flowEl.className = `text-3xl font-bold mt-1 ${cashFlow >= 0 ? 'text-blue-600' : 'text-red-500'}`;
+
+            const netWorth = totals.asset - totals.liability;
+            document.getElementById('net-worth').innerText = `¥${netWorth.toFixed(0)}`;
+            
+            const maxVal = Math.max(totals.asset, totals.liability, 1);
+            document.getElementById('liability-bar').style.width = `${(totals.liability / maxVal) * 100}%`;
+
+            updateChart(catExp);
+            localStorage.setItem('myFinanceData_v2', JSON.stringify(financeData));
+        }
+
+        function updateChart(data) {
+            const ctx = document.getElementById('expenseChart').getContext('2d');
+            if (expenseChartInstance) expenseChartInstance.destroy();
+            if (Object.keys(data).length === 0) return;
+            expenseChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{ data: Object.values(data), backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } }, cutout: '70%' }
+            });
+        }
+
+        // --- 核心逻辑：查看明细与删除 ---
+        function showHistory(type) {
+            const titles = { income: '收入明细', expense: '支出明细', asset: '资产明细', liability: '负债明细' };
+            document.getElementById('history-title').innerText = titles[type];
+            const listEl = document.getElementById('history-list');
+            listEl.innerHTML = '';
+
+            const filtered = financeData.records.filter(r => r.type === type);
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = '<p class="text-center text-gray-400 mt-10">暂无记录</p>';
+            } else {
+                filtered.reverse().forEach(r => {
+                    const div = document.createElement('div');
+                    div.className = "bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm";
+                    div.innerHTML = `
+                        <div>
+                            <p class="font-bold text-gray-800">${r.category || r.name}</p>
+                            <p class="text-[10px] text-gray-400">${r.date.split('T')[0]}</p>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="font-bold ${r.type==='income'||r.type==='asset'?'text-green-500':'text-red-500'}">¥${parseFloat(r.amount).toFixed(2)}</span>
+                            <button onclick="deleteRecord('${r.id}', '${type}')" class="text-gray-300 active:text-red-500 px-2 py-1"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    `;
+                    listEl.appendChild(div);
+                });
+            }
+            openModal('history');
+        }
+
+        function deleteRecord(id, type) {
+            if (confirm('确定要删除这条记录吗？')) {
+                financeData.records = financeData.records.filter(r => r.id !== id);
+                updateUI();
+                showHistory(type); // 刷新当前列表
+            }
+        }
+
+        // --- 保存功能 ---
+        function saveRecord(mode) {
+            let record = { id: Date.now().toString(), date: new Date().toISOString() };
+            if (mode === 'transaction') {
+                const amt = document.getElementById('t-amount').value;
+                if (!amt) return alert('请输入金额');
+                record.type = currentTransType;
+                record.amount = amt;
+                record.category = document.getElementById('t-category').value;
+                document.getElementById('t-amount').value = '';
+                closeModal('transaction');
+            } else {
+                const amt = document.getElementById('a-amount').value;
+                const name = document.getElementById('a-name').value;
+                if (!amt || !name) return alert('请输入完整信息');
+                record.type = currentAssetType;
+                record.amount = amt;
+                record.name = name;
+                document.getElementById('a-amount').value = '';
+                document.getElementById('a-name').value = '';
+                closeModal('asset_input');
+            }
+            financeData.records.push(record);
+            updateUI();
+        }
+
+        // --- 弹窗逻辑 ---
+        function openModal(t) { document.getElementById(`modal-${t}`).classList.remove('hidden'); }
+        function closeModal(t) { document.getElementById(`modal-${t}`).classList.add('hidden'); }
+
+        function setTransType(t) {
+            currentTransType = t;
+            document.getElementById('btn-expense').className = t==='expense'?'flex-1 py-2 rounded-lg text-sm font-medium bg-white shadow-sm':'flex-1 py-2 rounded-lg text-sm font-medium text-gray-500';
+            document.getElementById('btn-income').className = t==='income'?'flex-1 py-2 rounded-lg text-sm font-medium bg-white shadow-sm':'flex-1 py-2 rounded-lg text-sm font-medium text-gray-500';
+        }
+
+        function setAssetType(t) {
+            currentAssetType = t;
+            document.getElementById('btn-asset').className = t==='asset'?'flex-1 py-2 rounded-lg text-sm font-medium bg-white shadow-sm':'flex-1 py-2 rounded-lg text-sm font-medium text-gray-500';
+            document.getElementById('btn-liability').className = t==='liability'?'flex-1 py-2 rounded-lg text-sm font-medium bg-white shadow-sm':'flex-1 py-2 rounded-lg text-sm font-medium text-gray-500';
+        }
+
+        // --- 导入导出 ---
+        function exportData() {
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(JSON.stringify(financeData));
+            const a = document.createElement('a');
+            a.setAttribute('href', dataUri);
+            a.setAttribute('download', `财务备份_${new Date().toLocaleDateString()}.json`);
+            a.click();
+        }
+
+        function importData(input) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                financeData = JSON.parse(e.target.result);
+                updateUI();
+                alert('恢复成功');
+            };
+            reader.readAsText(input.files[0]);
+        }
+    </script>
+</body>
+</html>
