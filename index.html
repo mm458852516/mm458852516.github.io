@@ -20,6 +20,23 @@
         /* 隐藏滚动条但保留功能 */
         ::-webkit-scrollbar { display: none; }
 
+        html, body {
+            height: 100%;
+            overflow: hidden;      /* 防止整个页面出现系统滚动条 */
+        }
+        
+        #main-content {
+            overflow-y: auto;      /* 只让主内容区滚动 */
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* 隐藏滚动条但保留滚动 */
+        #main-content::-webkit-scrollbar {
+            width: 0;
+            height: 0;
+            display: none;
+        }
+
         /* iOS 风格卡片 */
         .ios-card {
             background: #FFFFFF;
@@ -43,6 +60,11 @@
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-bottom: 0.5px solid rgba(0,0,0,0.1);
+            height: 110px;
+        }
+
+        #main-content {
+            padding-top: 120px;  /* 给内容区留出导航栏高度 */
         }
 
         /* 底部弹窗动画 */
@@ -55,7 +77,12 @@
         }
 
         /* 隐藏原生日期输入 */
-        #date-picker-input { visibility: hidden; position: absolute; width: 0; height: 0; }
+        #date-picker-input {
+            visibility: hidden; 
+            position: absolute; 
+            width: 0; 
+            height: 0; 
+        }
         
         /* 进度条动画 */
         .progress-bar { transition: width 0.5s ease-out; }
@@ -78,7 +105,7 @@
         </div>
     </div>
 
-    <div id="main-content" class="px-4 pt-32 pb-24 space-y-6">
+    <div id="main-content" class="px-4 pb-24 space-y-6">
         
         <section>
             <div class="ios-card-static p-5 flex justify-between items-center relative overflow-hidden">
