@@ -990,8 +990,12 @@
                 sortedNames.forEach(name => {
                     const startVal = startSnapshot[name] ? startSnapshot[name].amount : 0;
                     const endVal = endSnapshot[name] ? endSnapshot[name].amount : 0;
+                    
+                    // --- 新增逻辑：如果年初和年末都是 0，则不显示该项目 ---
+                    if (Math.abs(startVal) < 0.01 && Math.abs(endVal) < 0.01) return;
+                    // --------------------------------------------------
+
                     const info = endSnapshot[name] || startSnapshot[name]; // 获取类型信息
-                    const diff = endVal - startVal;
                     
                     const div = document.createElement('div');
                     div.className = "flex justify-between items-center p-3 border-b border-gray-100 last:border-0 text-sm";
@@ -1013,7 +1017,6 @@
                     `;
                     detailList.appendChild(div);
                 });
-            }
 
             // Chart
             const ctx = document.getElementById('annualChart').getContext('2d');
