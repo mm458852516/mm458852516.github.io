@@ -252,7 +252,7 @@
         </div>
     </div>
 
-    <!-- 弹窗：记账 (修改后：增加固定/非固定选项) -->
+    <!-- 弹窗：记账 -->
     <div id="modal-transaction" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/40 backdrop-blur-[2px] modal-overlay" onclick="closeModal('transaction')"></div>
         <div class="absolute bottom-0 w-full bg-white rounded-t-[24px] p-6 pb-6 modal-enter shadow-2xl" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
@@ -271,13 +271,13 @@
                     <label class="text-xs text-gray-400 font-medium ml-1 mb-1 block">支出性质</label>
                     <div class="flex gap-3">
                         <label class="flex-1 cursor-pointer">
-                            <input type="radio" name="expense_nature" value="variable" checked class="hidden peer">
+                            <input type="radio" name="expense_nature" value="variable" checked class="hidden peer" onchange="updateCategoryOptions('expense')">
                             <div class="py-2.5 text-center rounded-lg border border-gray-200 text-gray-500 peer-checked:border-red-500 peer-checked:bg-red-50 peer-checked:text-red-600 transition-all font-medium text-sm">
                                 即时/非固定
                             </div>
                         </label>
                         <label class="flex-1 cursor-pointer">
-                            <input type="radio" name="expense_nature" value="fixed" class="hidden peer">
+                            <input type="radio" name="expense_nature" value="fixed" class="hidden peer" onchange="updateCategoryOptions('expense')">
                             <div class="py-2.5 text-center rounded-lg border border-gray-200 text-gray-500 peer-checked:border-red-500 peer-checked:bg-red-50 peer-checked:text-red-600 transition-all font-medium text-sm">
                                 固定支出 (房租等)
                             </div>
@@ -377,8 +377,38 @@
                     </div>
                 </div>
 
+                <!-- 资产变动情况 (新增) -->
+                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">资产变动 (年初 vs 年末)</h3>
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <!-- 资产卡片 -->
+                    <div class="bg-blue-50 p-4 rounded-2xl">
+                        <p class="text-xs font-bold text-blue-600 mb-2 flex items-center gap-1"><i class="fas fa-wallet"></i> 总资产</p>
+                        <div class="flex justify-between text-sm text-gray-600 mb-1">
+                            <span>年初</span>
+                            <span class="font-bold text-black" id="annual-asset-start">¥0</span>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-600">
+                            <span>年末</span>
+                            <span class="font-bold text-black" id="annual-asset-end">¥0</span>
+                        </div>
+                    </div>
+                    <!-- 负债卡片 -->
+                    <div class="bg-red-50 p-4 rounded-2xl">
+                        <p class="text-xs font-bold text-red-600 mb-2 flex items-center gap-1"><i class="fas fa-credit-card"></i> 总负债</p>
+                        <div class="flex justify-between text-sm text-gray-600 mb-1">
+                            <span>年初</span>
+                            <span class="font-bold text-black" id="annual-debt-start">¥0</span>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-600">
+                            <span>年末</span>
+                            <span class="font-bold text-black" id="annual-debt-end">¥0</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 年度总览 -->
-                <div class="grid grid-cols-2 gap-4 mb-6">
+                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">收支概览</h3>
+                <div class="grid grid-cols-2 gap-4 mb-4">
                     <div class="bg-green-50 p-4 rounded-2xl">
                         <p class="text-xs text-green-600 mb-1">年度总收入</p>
                         <p class="text-xl font-bold text-green-700" id="annual-income">¥0</p>
@@ -389,12 +419,12 @@
                     </div>
                 </div>
                 
-                <div class="bg-blue-50 p-4 rounded-2xl mb-8 flex justify-between items-center">
+                <div class="bg-gray-100 p-4 rounded-2xl mb-8 flex justify-between items-center">
                     <div>
-                        <p class="text-xs text-blue-600 mb-1">年度结余</p>
-                        <p class="text-2xl font-bold text-blue-700" id="annual-balance">¥0</p>
+                        <p class="text-xs text-gray-600 mb-1">年度结余</p>
+                        <p class="text-2xl font-bold text-black" id="annual-balance">¥0</p>
                     </div>
-                    <i class="fas fa-piggy-bank text-3xl text-blue-200"></i>
+                    <i class="fas fa-piggy-bank text-3xl text-gray-300"></i>
                 </div>
 
                 <!-- 12个月趋势图 -->
@@ -416,16 +446,25 @@
         let annualChartInstance = null;
         let reportYear = new Date().getFullYear();
 
-        // 分类定义
+        // 分类定义 (根据需求修改)
         const categories = {
-            expense: [
+            // 非固定支出 (Variable)
+            expense_variable: [
                 {val: '餐饮', label: '🍔 餐饮美食'},
                 {val: '交通', label: '🚗 交通出行'},
                 {val: '购物', label: '🛍️ 购物消费'},
-                {val: '居住', label: '🏠 居住缴费'},
+                {val: '水电气', label: '⚡ 水电气'}, // 原居住改为水电气
                 {val: '娱乐', label: '🎮 休闲娱乐'},
                 {val: '医疗', label: '💊 医疗健康'},
                 {val: '其他', label: '📝 其他支出'}
+            ],
+            // 固定支出 (Fixed) - 新增需求
+            expense_fixed: [
+                {val: '房租', label: '🏠 房租'},
+                {val: '物业费', label: '🏢 物业费'},
+                {val: '房贷', label: '🏦 房贷'},
+                {val: '个人贷款', label: '💳 个人贷款 (短期)'},
+                {val: '汽车贷款', label: '🚘 汽车贷款'}
             ],
             income: [
                 {val: '工资', label: '💰 工资收入'},
@@ -435,7 +474,7 @@
         };
 
         window.onload = function() {
-            const savedData = localStorage.getItem('myFinanceData_v4'); // Version bumped for new fields
+            const savedData = localStorage.getItem('myFinanceData_v5'); // Version bumped
             if (savedData) financeData = JSON.parse(savedData);
             
             updateCategoryOptions('expense'); // Init select
@@ -526,7 +565,7 @@
             // 更新图表和列表
             updateChartAndList(catExp, totals.expense);
             
-            localStorage.setItem('myFinanceData_v4', JSON.stringify(financeData));
+            localStorage.setItem('myFinanceData_v5', JSON.stringify(financeData));
         }
 
         function updateChartAndList(data, totalExp) {
@@ -538,11 +577,14 @@
             const isEmpty = Object.keys(data).length === 0;
             const displayData = isEmpty ? { "无": 1 } : data;
             
-            // 颜色定义
+            // 颜色定义 (扩充了新分类颜色)
             const colorMap = {
                 '餐饮': '#FF3B30', '交通': '#007AFF', '购物': '#FF9500', 
-                '居住': '#AF52DE', '娱乐': '#5856D6', '医疗': '#FF2D55', 
-                '其他': '#8E8E93', '理财': '#34C759', '无': '#F2F2F7'
+                '水电气': '#AF52DE', '娱乐': '#5856D6', '医疗': '#FF2D55', 
+                '其他': '#8E8E93', '理财': '#34C759', 
+                '房租': '#FF9F0A', '物业费': '#FFD60A', '房贷': '#AC8E68', 
+                '个人贷款': '#FF453A', '汽车贷款': '#30B0C7',
+                '无': '#F2F2F7'
             };
             
             const labels = Object.keys(displayData);
@@ -617,16 +659,24 @@
         function updateAnnualReport() {
             document.getElementById('report-year-display').innerText = reportYear;
             
-            // 初始化12个月数据
+            // 初始化数据
             let monthlyData = Array.from({length: 12}, () => ({inc: 0, exp: 0}));
             let yTotalInc = 0;
             let yTotalExp = 0;
+            
+            // 资产负债 (Snapshot logic)
+            // 年初: 只要日期 < 当年1月1日
+            // 年末: 只要日期 <= 当年12月31日
+            let assetStart = 0, assetEnd = 0;
+            let debtStart = 0, debtEnd = 0;
 
             financeData.records.forEach(r => {
+                const d = new Date(r.date);
+                const amt = parseFloat(r.amount);
+
+                // 收支流计算 (Flow)
                 if(r.type === 'income' || r.type === 'expense') {
-                    const d = new Date(r.date);
                     if(d.getFullYear() === reportYear) {
-                        const amt = parseFloat(r.amount);
                         const m = d.getMonth();
                         if(r.type === 'income') {
                             monthlyData[m].inc += amt;
@@ -637,11 +687,29 @@
                         }
                     }
                 }
+
+                // 资产负债存量计算 (Stock)
+                // 年初金额 (截止到上一年度末)
+                if (d.getFullYear() < reportYear) {
+                    if (r.type === 'asset') assetStart += amt;
+                    if (r.type === 'liability') debtStart += amt;
+                }
+                // 年末金额 (截止到本年度末)
+                if (d.getFullYear() <= reportYear) {
+                    if (r.type === 'asset') assetEnd += amt;
+                    if (r.type === 'liability') debtEnd += amt;
+                }
             });
 
+            // 填充UI
             document.getElementById('annual-income').innerText = `¥${yTotalInc.toLocaleString()}`;
             document.getElementById('annual-expense').innerText = `¥${yTotalExp.toLocaleString()}`;
             document.getElementById('annual-balance').innerText = `¥${(yTotalInc - yTotalExp).toLocaleString()}`;
+
+            document.getElementById('annual-asset-start').innerText = `¥${assetStart.toLocaleString()}`;
+            document.getElementById('annual-asset-end').innerText = `¥${assetEnd.toLocaleString()}`;
+            document.getElementById('annual-debt-start').innerText = `¥${debtStart.toLocaleString()}`;
+            document.getElementById('annual-debt-end').innerText = `¥${debtEnd.toLocaleString()}`;
 
             // 渲染柱状图
             const ctx = document.getElementById('annualChart').getContext('2d');
@@ -742,9 +810,19 @@
 
         function getIcon(category) {
             const map = {
+                // 原有映射
                 '餐饮': 'fa-utensils', '交通': 'fa-car', '购物': 'fa-shopping-bag',
-                '居住': 'fa-home', '工资': 'fa-coins', '其他': 'fa-sticky-note',
-                '娱乐': 'fa-gamepad', '医疗': 'fa-briefcase-medical', '理财': 'fa-chart-line',
+                '水电气': 'fa-bolt', // 更新
+                '娱乐': 'fa-gamepad', '医疗': 'fa-briefcase-medical', '其他': 'fa-sticky-note',
+                '工资': 'fa-coins', '理财': 'fa-chart-line',
+                
+                // 新增固定支出映射
+                '房租': 'fa-house-user',
+                '物业费': 'fa-building',
+                '房贷': 'fa-file-invoice-dollar',
+                '个人贷款': 'fa-credit-card',
+                '汽车贷款': 'fa-car-side',
+
                 '默认': 'fa-tag'
             };
             return map[category] || 'fa-tag';
@@ -755,7 +833,6 @@
                 financeData.records = financeData.records.filter(r => r.id !== id);
                 updateUI();
                 showHistory(type); 
-                // 如果在年报界面删除了，也刷新下年报
                 if(!document.getElementById('modal-annual').classList.contains('hidden')){
                     updateAnnualReport();
                 }
@@ -827,16 +904,33 @@
             
             // 支出性质选择器只有在支出时才显示
             const natureSelector = document.getElementById('expense-type-selector');
-            if(t === 'expense') natureSelector.classList.remove('hidden');
-            else natureSelector.classList.add('hidden');
-
-            updateCategoryOptions(t);
+            if(t === 'expense') {
+                natureSelector.classList.remove('hidden');
+                updateCategoryOptions('expense');
+            } else {
+                natureSelector.classList.add('hidden');
+                updateCategoryOptions('income');
+            }
         }
 
         function updateCategoryOptions(type) {
             const select = document.getElementById('t-category');
             select.innerHTML = '';
-            const list = categories[type];
+            
+            let list = [];
+            
+            if (type === 'income') {
+                list = categories.income;
+            } else if (type === 'expense') {
+                // 检查选中的是固定还是非固定
+                const radios = document.getElementsByName('expense_nature');
+                let isFixed = false;
+                for(let r of radios) { 
+                    if(r.checked && r.value === 'fixed') isFixed = true; 
+                }
+                list = isFixed ? categories.expense_fixed : categories.expense_variable;
+            }
+
             list.forEach(c => {
                 const opt = document.createElement('option');
                 opt.value = c.val;
