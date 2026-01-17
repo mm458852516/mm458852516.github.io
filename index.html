@@ -10,10 +10,22 @@
     <style>
         /* --- 基础样式与iOS适配 --- */
         :root {
-            --ios-curve: cubic-bezier(0.25, 0.8, 0.25, 1); /* iOS 默认缓动曲线 */
-            --ios-spring: cubic-bezier(0.175, 0.885, 0.32, 1.1); /* 略带回弹的弹簧曲线 */
+            --ios-curve: cubic-bezier(0.25, 0.8, 0.25, 1);
+            --ios-spring: cubic-bezier(0.175, 0.885, 0.32, 1.1);
         }
         
+        /* 禁止长按选中文本 (App质感) */
+        * {
+            -webkit-user-select: none; /* Safari / Chrome */
+            user-select: none;
+            -webkit-touch-callout: none; /* 禁止iOS长按菜单 */
+        }
+        /* 允许输入框可选中编辑 */
+        input, textarea {
+            -webkit-user-select: auto;
+            user-select: auto;
+        }
+
         html, body {
             -ms-overflow-style: none;
             scrollbar-width: none;
@@ -29,25 +41,24 @@
             padding-bottom: env(safe-area-inset-bottom);
         }
         
-        /* 导航栏毛玻璃 */
+        /* 导航栏适配优化：居中对齐，增加顶部间距适配刘海屏 */
         .glass-nav {
             position: fixed; top: 0; left: 0; right: 0; z-index: 50;
-            background: rgba(242, 242, 247, 0.8);
+            background: rgba(242, 242, 247, 0.85);
             backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
             border-bottom: 0.5px solid rgba(0,0,0,0.1);
-            padding-top: calc(env(safe-area-inset-top) + 12px);
+            /* 增加顶部留白，优化 12 mini 显示 */
+            padding-top: calc(env(safe-area-inset-top) + 8px); 
             padding-bottom: 12px;
             transition: background 0.3s ease;
         }
 
-        /* 顶部日期选择器 */
         .date-trigger-wrapper { position: relative; display: inline-block; }
         .native-date-input {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             opacity: 0; z-index: 10; cursor: pointer;
         }
 
-        /* 卡片基础与点击动效 */
         .ios-card-static { background: #FFFFFF; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .ios-card, .ios-clickable {
             background: #FFFFFF; border-radius: 16px; 
@@ -60,9 +71,8 @@
             opacity: 0.9;
         }
 
-        #main-content { padding-top: calc(env(safe-area-inset-top) + 100px); }
+        #main-content { padding-top: calc(env(safe-area-inset-top) + 90px); }
         
-        /* 弹窗动画 */
         .modal-overlay { 
             transition: opacity 0.4s var(--ios-curve); 
             opacity: 0;
@@ -78,17 +88,15 @@
         }
         .modal-enter .modal-content { transform: translateY(0); }
         
-        /* 列表项交错进入动画 */
         @keyframes slideInUpFade {
             from { opacity: 0; transform: translateY(20px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
         .list-item-anim {
             animation: slideInUpFade 0.5s var(--ios-curve) forwards;
-            opacity: 0; /* 初始不可见 */
+            opacity: 0; 
         }
 
-        /* 进度条动画 */
         .sub-progress-bg { background-color: #E5E5EA; border-radius: 4px; height: 6px; overflow: hidden; }
         .sub-progress-fill { 
             height: 100%; border-radius: 4px; 
@@ -96,29 +104,24 @@
             transition: width 1s var(--ios-curve);
         }
         
-        /* 排行条 */
         .rank-bar-bg { background-color: #f3f4f6; height: 4px; border-radius: 2px; width: 100%; overflow: hidden; margin-top: 4px; }
         .rank-bar-fill { height: 100%; border-radius: 2px; width: 0%; transition: width 0.8s ease-out; }
 
-        /* 按钮通用 */
-        .btn-ios {
-            transition: transform 0.2s, background-color 0.2s;
-        }
-        .btn-ios:active {
-            transform: scale(0.97);
-        }
+        .btn-ios { transition: transform 0.2s, background-color 0.2s; }
+        .btn-ios:active { transform: scale(0.97); }
     </style>
 </head>
 <body class="antialiased">
 
     <!-- 顶部导航栏 -->
     <div class="glass-nav">
-        <div class="px-5 flex justify-between items-end">
+        <!-- 改为 items-center 确保垂直居中 -->
+        <div class="px-5 flex justify-between items-center">
             <div class="date-trigger-wrapper btn-ios active:opacity-70">
-                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Total Balance</p>
+                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-0.5">Total Balance</p>
                 <div class="flex items-center gap-2">
-                    <h1 class="text-3xl font-bold tracking-tight text-black" id="current-date">...</h1>
-                    <div class="bg-gray-200/80 rounded-full h-6 w-6 flex items-center justify-center backdrop-blur-md">
+                    <h1 class="text-2xl font-bold tracking-tight text-black" id="current-date">...</h1>
+                    <div class="bg-gray-200/80 rounded-full h-5 w-5 flex items-center justify-center backdrop-blur-md">
                         <i class="fas fa-chevron-down text-[10px] text-gray-600"></i>
                     </div>
                 </div>
@@ -132,7 +135,7 @@
     </div>
 
     <!-- 主内容区 -->
-    <div id="main-content" class="px-4 pb-24 space-y-6">
+    <div id="main-content" class="px-4 pb-24 space-y-5">
         
         <!-- 本月结余卡片 -->
         <section>
@@ -145,7 +148,6 @@
                     <i class="far fa-calendar-alt text-lg"></i>
                     <input type="month" class="native-date-input rounded-full" onchange="handleDateChange(this)">
                 </div>
-                <!-- 装饰光晕 -->
                 <div class="absolute -right-6 -bottom-6 h-32 w-32 bg-blue-400/20 opacity-50 rounded-full blur-2xl pointer-events-none"></div>
             </div>
         </section>
@@ -171,7 +173,6 @@
                     </div>
                 </div>
 
-                <!-- 图表区域 -->
                 <div class="p-6 flex flex-col items-center justify-center relative border-b border-gray-100/50">
                     <div class="h-48 w-full relative z-10">
                         <canvas id="expenseChart"></canvas>
@@ -181,10 +182,7 @@
                     </div>
                 </div>
 
-                <!-- 支出占比详细列表 -->
-                <div id="expense-legend" class="p-4 space-y-4">
-                    <!-- JS 生成列表 -->
-                </div>
+                <div id="expense-legend" class="p-4 space-y-4"></div>
 
                 <div class="p-4 border-t border-gray-100/50">
                     <button onclick="openModal('transaction')" class="w-full bg-[#007AFF] active:bg-[#0063CC] text-white py-3.5 rounded-xl font-semibold text-[17px] shadow-lg shadow-blue-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
@@ -199,7 +197,6 @@
             <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-4 mb-2">资产管理</h2>
             <div class="ios-card-static overflow-hidden">
                 
-                <!-- 资产板块 -->
                 <div onclick="showHistory('asset')" class="p-4 border-b border-gray-100 active:bg-gray-50 transition-colors cursor-pointer">
                     <div class="flex items-center justify-between mb-2">
                         <div class="flex items-center gap-2">
@@ -230,7 +227,6 @@
                     </div>
                 </div>
 
-                <!-- 负债板块 -->
                 <div onclick="showHistory('liability')" class="p-4 border-b border-gray-100 active:bg-gray-50 transition-colors cursor-pointer">
                     <div class="flex items-center justify-between mb-2">
                         <div class="flex items-center gap-2">
@@ -261,7 +257,6 @@
                     </div>
                 </div>
 
-                <!-- 净资产 -->
                 <div class="p-4 bg-gray-50/50 flex justify-between items-center">
                     <span class="text-sm font-medium text-gray-500">净资产 (Net Worth)</span>
                     <span class="text-xl font-bold text-gray-900" id="net-worth">¥0</span>
@@ -297,7 +292,6 @@
             <div class="w-full flex justify-center pt-3 pb-1" onclick="closeModal('history')">
                 <div class="w-12 h-1.5 bg-gray-300 rounded-full opacity-50"></div>
             </div>
-            <!-- Header with Blur -->
             <div class="px-5 py-3 flex justify-between items-center border-b border-gray-200/50 sticky top-0 z-10 bg-[#F2F2F7]/80 backdrop-blur-md rounded-t-[28px]">
                 <h3 class="text-[22px] font-bold text-black" id="history-title">记录</h3>
                 <button onclick="closeModal('history')" class="bg-gray-200/80 h-8 w-8 rounded-full flex items-center justify-center text-gray-500 font-bold active:scale-90 transition-transform"><i class="fas fa-times"></i></button>
@@ -322,7 +316,6 @@
                     <button onclick="setTransType('income')" id="btn-income" class="flex-1 py-2 rounded-lg text-[15px] font-medium text-gray-500 transition-all duration-300">收入</button>
                 </div>
 
-                <!-- 支出性质选择 -->
                 <div id="expense-type-selector">
                     <label class="text-xs text-gray-400 font-medium ml-1 mb-1 block">支出性质</label>
                     <div class="flex gap-3">
@@ -353,7 +346,6 @@
                      <label class="text-xs text-gray-400 font-medium ml-1">分类</label>
                     <div class="grid grid-cols-3 gap-3 mt-2">
                         <select id="t-category" class="col-span-3 bg-gray-50 text-lg rounded-xl px-4 py-3 outline-none appearance-none border border-gray-100 text-gray-700 font-medium focus:bg-white focus:border-blue-300 transition-all">
-                            <!-- JS动态填充 -->
                         </select>
                     </div>
                 </div>
@@ -363,7 +355,7 @@
         </div>
     </div>
 
-    <!-- 弹窗：资产录入 -->
+    <!-- 弹窗：资产录入 (含修改模式) -->
     <div id="modal-asset_input" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 modal-overlay" onclick="closeModal('asset_input')"></div>
         <div class="absolute bottom-0 w-full bg-white rounded-t-[28px] p-6 pb-6 modal-content shadow-2xl" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
@@ -372,9 +364,10 @@
             </div>
             
             <div class="space-y-5">
-                <h3 class="text-xl font-bold text-center">资产/负债录入</h3>
+                <h3 class="text-xl font-bold text-center" id="asset-modal-title">资产/负债录入</h3>
                 
-                <div class="flex bg-gray-100 p-1 rounded-xl">
+                <!-- 类型切换 (修改模式下禁用) -->
+                <div class="flex bg-gray-100 p-1 rounded-xl" id="asset-type-switch">
                     <button onclick="setAssetType('asset')" id="btn-asset" class="flex-1 py-2 rounded-lg text-[15px] font-medium shadow-sm bg-white text-black transition-all">资产</button>
                     <button onclick="setAssetType('liability')" id="btn-liability" class="flex-1 py-2 rounded-lg text-[15px] font-medium text-gray-500 transition-all">负债</button>
                 </div>
@@ -406,7 +399,7 @@
                     <input type="number" id="a-amount" class="w-full bg-transparent outline-none text-2xl font-bold text-black placeholder-gray-300" placeholder="0.00">
                 </div>
 
-                <button onclick="saveRecord('asset')" class="w-full bg-[#007AFF] text-white py-4 rounded-2xl font-bold text-lg active:scale-[0.96] transition-transform shadow-lg shadow-blue-500/20">确认添加</button>
+                <button onclick="saveRecord('asset')" class="w-full bg-[#007AFF] text-white py-4 rounded-2xl font-bold text-lg active:scale-[0.96] transition-transform shadow-lg shadow-blue-500/20" id="btn-save-asset">确认保存</button>
             </div>
         </div>
     </div>
@@ -433,11 +426,10 @@
                     </div>
                 </div>
 
-                <!-- 资产变动情况 -->
+                <!-- 资产变动情况 (汇总) -->
                 <div class="animate-fade-in-up" style="animation-delay: 0.1s;">
                     <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">资产变动 (年初 vs 年末)</h3>
                     <div class="grid grid-cols-2 gap-3 mb-6">
-                        <!-- 资产卡片 -->
                         <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100">
                             <p class="text-xs font-bold text-blue-600 mb-2 flex items-center gap-1"><i class="fas fa-wallet"></i> 总资产</p>
                             <div class="flex justify-between text-sm text-gray-600 mb-1">
@@ -449,7 +441,6 @@
                                 <span class="font-bold text-black" id="annual-asset-end">¥0</span>
                             </div>
                         </div>
-                        <!-- 负债卡片 -->
                         <div class="bg-red-50 p-4 rounded-2xl border border-red-100">
                             <p class="text-xs font-bold text-red-600 mb-2 flex items-center gap-1"><i class="fas fa-credit-card"></i> 总负债</p>
                             <div class="flex justify-between text-sm text-gray-600 mb-1">
@@ -461,6 +452,14 @@
                                 <span class="font-bold text-black" id="annual-debt-end">¥0</span>
                             </div>
                         </div>
+                    </div>
+                </div>
+                
+                <!-- 资产变动情况 (明细) -->
+                <div class="animate-fade-in-up mb-6" style="animation-delay: 0.15s;">
+                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">资产负债明细表</h3>
+                    <div class="bg-white rounded-xl border border-gray-100 overflow-hidden" id="annual-asset-detail-list">
+                        <!-- JS 填充 -->
                     </div>
                 </div>
 
@@ -508,33 +507,26 @@
         let annualChartInstance = null;
         let reportYear = new Date().getFullYear();
 
-        // 分类定义
         const categories = {
             expense_variable: [
-                {val: '餐饮', label: '🍔 餐饮美食'},
-                {val: '交通', label: '🚗 交通出行'},
-                {val: '购物', label: '🛍️ 购物消费'},
-                {val: '水电气', label: '⚡ 水电气'},
-                {val: '娱乐', label: '🎮 休闲娱乐'},
-                {val: '医疗', label: '💊 医疗健康'},
+                {val: '餐饮', label: '🍔 餐饮美食'}, {val: '交通', label: '🚗 交通出行'},
+                {val: '购物', label: '🛍️ 购物消费'}, {val: '水电气', label: '⚡ 水电气'},
+                {val: '娱乐', label: '🎮 休闲娱乐'}, {val: '医疗', label: '💊 医疗健康'},
                 {val: '其他', label: '📝 其他支出'}
             ],
             expense_fixed: [
-                {val: '房租', label: '🏠 房租'},
-                {val: '物业费', label: '🏢 物业费'},
-                {val: '房贷', label: '🏦 房贷'},
-                {val: '个人贷款', label: '💳 个人贷款 (短期)'},
+                {val: '房租', label: '🏠 房租'}, {val: '物业费', label: '🏢 物业费'},
+                {val: '房贷', label: '🏦 房贷'}, {val: '个人贷款', label: '💳 个人贷款 (短期)'},
                 {val: '汽车贷款', label: '🚘 汽车贷款'}
             ],
             income: [
-                {val: '工资', label: '💰 工资收入'},
-                {val: '理财', label: '📈 投资理财'},
+                {val: '工资', label: '💰 工资收入'}, {val: '理财', label: '📈 投资理财'},
                 {val: '其他', label: '📝 其他收入'}
             ]
         };
 
         window.onload = function() {
-            const savedData = localStorage.getItem('myFinanceData_v5'); 
+            const savedData = localStorage.getItem('myFinanceData_v6'); 
             if (savedData) financeData = JSON.parse(savedData);
             updateCategoryOptions('expense');
             updateUI();
@@ -548,22 +540,87 @@
             }
         }
 
+        // --- 核心逻辑：获取某月资产快照 ---
+        // 返回：{ '招行卡': {amount: 1000, type: 'asset', subtype: 'current', recordId: '123' or null} }
+        function getMonthlySnapshot(year, month) {
+            // 1. 找出所有出现过的资产名称
+            const allNames = new Set();
+            financeData.records.forEach(r => {
+                if(r.type === 'asset' || r.type === 'liability') allNames.add(r.name);
+            });
+
+            // 2. 针对每个名字，找该月份及之前的最后一条记录
+            const snapshot = {};
+            const targetTime = new Date(year, month + 1, 0, 23, 59, 59).getTime(); // 月末
+
+            allNames.forEach(name => {
+                // 找到该名字所有记录，按时间倒序
+                const history = financeData.records
+                    .filter(r => r.name === name)
+                    .filter(r => new Date(r.date).getTime() <= targetTime)
+                    .sort((a,b) => new Date(b.date) - new Date(a.date));
+
+                if(history.length > 0) {
+                    const latest = history[0];
+                    // 检查最新这条记录是否正好是当前选中月份的
+                    const rDate = new Date(latest.date);
+                    const isCurrentMonth = (rDate.getFullYear() === year && rDate.getMonth() === month);
+                    
+                    snapshot[name] = {
+                        amount: parseFloat(latest.amount),
+                        type: latest.type,
+                        subtype: latest.subtype,
+                        recordId: isCurrentMonth ? latest.id : null, // 只有本月有显式记录才有ID
+                        date: latest.date
+                    };
+                }
+            });
+            return snapshot;
+        }
+
         function updateUI() {
-            let totals = { 
-                income: 0, expense: 0, 
-                asset: 0, liability: 0,
-                assetCurrent: 0, assetFixed: 0,
-                debtShort: 0, debtLong: 0
-            };
-            let catExp = {};
             const vYear = viewDate.getFullYear();
             const vMonth = viewDate.getMonth();
-
-            document.getElementById('current-date').innerText = `${vYear}年${vMonth + 1}月`;
             
+            // 日期显示
+            document.getElementById('current-date').innerText = `${vYear}年${vMonth + 1}月`;
             const dateStr = `${vYear}-${(vMonth + 1).toString().padStart(2, '0')}`;
             document.querySelectorAll('.native-date-input').forEach(input => input.value = dateStr);
 
+            // 1. 计算收支 (Flow)
+            let totalInc = 0, totalExp = 0;
+            let catExp = {};
+            
+            financeData.records.forEach(r => {
+                if(r.type === 'income' || r.type === 'expense') {
+                    const d = new Date(r.date);
+                    if(d.getFullYear() === vYear && d.getMonth() === vMonth) {
+                        const amt = parseFloat(r.amount);
+                        if(r.type === 'income') totalInc += amt;
+                        else {
+                            totalExp += amt;
+                            catExp[r.category] = (catExp[r.category] || 0) + amt;
+                        }
+                    }
+                }
+            });
+
+            // 2. 计算资产负债 (Snapshot)
+            let snapshot = getMonthlySnapshot(vYear, vMonth);
+            let totals = { asset: 0, liability: 0, assetCurrent: 0, assetFixed: 0, debtShort: 0, debtLong: 0 };
+            
+            Object.values(snapshot).forEach(item => {
+                const amt = item.amount;
+                if(item.type === 'asset') {
+                    totals.asset += amt;
+                    if(item.subtype === 'current') totals.assetCurrent += amt; else totals.assetFixed += amt;
+                } else {
+                    totals.liability += amt;
+                    if(item.subtype === 'short') totals.debtShort += amt; else totals.debtLong += amt;
+                }
+            });
+
+            // 更新DOM
             const today = new Date();
             if (vYear === today.getFullYear() && vMonth === today.getMonth()) {
                 document.getElementById('add-btn-text').innerText = "记一笔";
@@ -571,344 +628,189 @@
                 document.getElementById('add-btn-text').innerText = `补录 ${vMonth+1}月账目`;
             }
 
-            financeData.records.forEach(r => {
-                const amt = parseFloat(r.amount);
-                
-                if (r.type === 'income' || r.type === 'expense') {
-                    const rDate = new Date(r.date);
-                    if (rDate.getFullYear() === vYear && rDate.getMonth() === vMonth) {
-                        totals[r.type] += amt;
-                        if (r.type === 'expense') {
-                            catExp[r.category] = (catExp[r.category] || 0) + amt;
-                        }
-                    }
-                } else if (r.type === 'asset') {
-                    totals.asset += amt;
-                    if (!r.subtype || r.subtype === 'current') totals.assetCurrent += amt;
-                    else totals.assetFixed += amt;
-                } else if (r.type === 'liability') {
-                    totals.liability += amt;
-                    if (!r.subtype || r.subtype === 'short') totals.debtShort += amt;
-                    else totals.debtLong += amt;
-                }
-            });
-
-            // 基础收支
-            document.getElementById('total-income').innerText = `¥${totals.income.toFixed(2)}`;
-            document.getElementById('total-expense').innerText = `¥${totals.expense.toFixed(2)}`;
-            
-            const cashFlow = totals.income - totals.expense;
+            document.getElementById('total-income').innerText = `¥${totalInc.toFixed(2)}`;
+            document.getElementById('total-expense').innerText = `¥${totalExp.toFixed(2)}`;
+            const cashFlow = totalInc - totalExp;
             const flowEl = document.getElementById('cash-flow-display');
             flowEl.innerText = `¥${cashFlow.toFixed(2)}`;
             flowEl.className = `text-4xl font-bold tracking-tight ${cashFlow >= 0 ? 'text-black' : 'text-red-500'}`;
 
-            // 资产负债展示
             document.getElementById('total-assets').innerText = `¥${totals.asset.toLocaleString()}`;
             document.getElementById('total-liabilities').innerText = `¥${totals.liability.toLocaleString()}`;
             document.getElementById('net-worth').innerText = `¥${(totals.asset - totals.liability).toLocaleString()}`;
-
-            // 细分展示 (DOM更新)
+            
             document.getElementById('val-asset-current').innerText = `¥${totals.assetCurrent.toLocaleString()}`;
             document.getElementById('val-asset-fixed').innerText = `¥${totals.assetFixed.toLocaleString()}`;
             document.getElementById('val-debt-short').innerText = `¥${totals.debtShort.toLocaleString()}`;
             document.getElementById('val-debt-long').innerText = `¥${totals.debtLong.toLocaleString()}`;
 
-            // 进度条逻辑 (使用 requestAnimationFrame 确保过渡效果)
-            const maxAsset = Math.max(totals.asset, 1);
-            const maxDebt = Math.max(totals.liability, 1);
-            
             requestAnimationFrame(() => {
+                const maxAsset = Math.max(totals.asset, 1);
+                const maxDebt = Math.max(totals.liability, 1);
                 document.getElementById('bar-asset-current').style.width = `${(totals.assetCurrent / maxAsset)*100}%`;
                 document.getElementById('bar-asset-fixed').style.width = `${(totals.assetFixed / maxAsset)*100}%`;
                 document.getElementById('bar-debt-short').style.width = `${(totals.debtShort / maxDebt)*100}%`;
                 document.getElementById('bar-debt-long').style.width = `${(totals.debtLong / maxDebt)*100}%`;
             });
 
-            // 更新图表和列表
-            updateChartAndList(catExp, totals.expense);
-            
-            localStorage.setItem('myFinanceData_v5', JSON.stringify(financeData));
+            updateChartAndList(catExp, totalExp);
+            localStorage.setItem('myFinanceData_v6', JSON.stringify(financeData));
         }
 
-        function updateChartAndList(data, totalExp) {
-            const ctx = document.getElementById('expenseChart').getContext('2d');
-            const legendContainer = document.getElementById('expense-legend');
+        // --- 资产弹窗编辑逻辑 ---
+        function openAssetEdit(name, amount, type, subtype) {
+            // 打开弹窗并预填信息
+            openModal('asset_input');
+            document.getElementById('asset-modal-title').innerText = "修改资产/负债状态";
+            document.getElementById('a-name').value = name;
+            document.getElementById('a-name').disabled = true; // 修改模式下名字不可变，变了就是新增
+            document.getElementById('a-amount').value = amount;
             
-            if (expenseChartInstance) expenseChartInstance.destroy();
+            // 锁定类型
+            setAssetType(type);
+            document.getElementById('asset-type-switch').classList.add('opacity-50', 'pointer-events-none');
             
-            const isEmpty = Object.keys(data).length === 0;
-            const displayData = isEmpty ? { "无": 1 } : data;
-            
-            const colorMap = {
-                '餐饮': '#FF3B30', '交通': '#007AFF', '购物': '#FF9500', 
-                '水电气': '#AF52DE', '娱乐': '#5856D6', '医疗': '#FF2D55', 
-                '其他': '#8E8E93', '理财': '#34C759', 
-                '房租': '#FF9F0A', '物业费': '#FFD60A', '房贷': '#AC8E68', 
-                '个人贷款': '#FF453A', '汽车贷款': '#30B0C7',
-                '无': '#F2F2F7'
-            };
-            
-            const labels = Object.keys(displayData);
-            const values = Object.values(displayData);
-            const bgColors = labels.map(l => colorMap[l] || '#8E8E93');
-
-            // 1. 渲染图表
-            expenseChartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{ 
-                        data: values, 
-                        backgroundColor: bgColors, 
-                        borderWidth: 0,
-                        hoverOffset: 10
-                    }]
-                },
-                options: { 
-                    responsive: true, maintainAspectRatio: false, 
-                    plugins: { legend: { display: false }, tooltip: { enabled: !isEmpty } }, 
-                    cutout: '75%', animation: { animateScale: true, animateRotate: true, duration: 1000, easing: 'easeOutQuart' }
-                }
-            });
-
-            // 2. 渲染占比列表
-            legendContainer.innerHTML = '';
-            if(!isEmpty) {
-                const sortedItems = Object.entries(data).sort((a,b) => b[1] - a[1]);
-                
-                sortedItems.forEach(([cat, amount], index) => {
-                    const percent = ((amount / totalExp) * 100).toFixed(1);
-                    const color = colorMap[cat] || '#8E8E93';
-                    const icon = getIcon(cat);
-                    
-                    const div = document.createElement('div');
-                    // 添加进入动画
-                    div.style.animation = `slideInUpFade 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) forwards`;
-                    div.style.opacity = '0';
-                    div.style.animationDelay = `${index * 0.05}s`; // 错峰显示
-
-                    div.innerHTML = `
-                        <div class="flex items-center justify-between text-sm mb-1">
-                            <div class="flex items-center gap-2">
-                                <i class="fas ${icon} w-5 text-center" style="color:${color}"></i>
-                                <span class="font-medium text-gray-700">${cat}</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <span class="text-xs font-bold text-gray-400">${percent}%</span>
-                                <span class="font-bold text-gray-900">¥${amount.toLocaleString()}</span>
-                            </div>
-                        </div>
-                        <div class="rank-bar-bg">
-                            <div class="rank-bar-fill" style="width: 0%; background-color: ${color}"></div>
-                        </div>
-                    `;
-                    legendContainer.appendChild(div);
-                    
-                    // 延迟触发进度条动画
-                    setTimeout(() => {
-                        div.querySelector('.rank-bar-fill').style.width = `${percent}%`;
-                    }, 100 + (index * 50));
-                });
+            // 锁定子类型
+            const radios = document.getElementsByName('asset_subtype');
+            if(type === 'asset') {
+                radios[0].checked = (subtype === 'current');
+                radios[1].checked = (subtype !== 'current');
             } else {
-                legendContainer.innerHTML = '<p class="text-center text-xs text-gray-400 py-2">本月暂无支出记录</p>';
+                radios[0].checked = (subtype === 'short');
+                radios[1].checked = (subtype !== 'short');
             }
         }
 
-        // 年报逻辑
-        function openAnnualReport() {
-            reportYear = new Date().getFullYear();
-            updateAnnualReport();
-            openModal('annual');
-        }
-
-        function changeReportYear(delta) {
-            reportYear += delta;
-            updateAnnualReport();
-        }
-
-        function updateAnnualReport() {
-            document.getElementById('report-year-display').innerText = reportYear;
-            
-            let monthlyData = Array.from({length: 12}, () => ({inc: 0, exp: 0}));
-            let yTotalInc = 0;
-            let yTotalExp = 0;
-            
-            let assetStart = 0, assetEnd = 0;
-            let debtStart = 0, debtEnd = 0;
-
-            financeData.records.forEach(r => {
-                const d = new Date(r.date);
-                const amt = parseFloat(r.amount);
-
-                if(r.type === 'income' || r.type === 'expense') {
-                    if(d.getFullYear() === reportYear) {
-                        const m = d.getMonth();
-                        if(r.type === 'income') {
-                            monthlyData[m].inc += amt;
-                            yTotalInc += amt;
-                        } else {
-                            monthlyData[m].exp += amt;
-                            yTotalExp += amt;
-                        }
-                    }
-                }
-
-                if (d.getFullYear() < reportYear) {
-                    if (r.type === 'asset') assetStart += amt;
-                    if (r.type === 'liability') debtStart += amt;
-                }
-                if (d.getFullYear() <= reportYear) {
-                    if (r.type === 'asset') assetEnd += amt;
-                    if (r.type === 'liability') debtEnd += amt;
-                }
-            });
-
-            document.getElementById('annual-income').innerText = `¥${yTotalInc.toLocaleString()}`;
-            document.getElementById('annual-expense').innerText = `¥${yTotalExp.toLocaleString()}`;
-            document.getElementById('annual-balance').innerText = `¥${(yTotalInc - yTotalExp).toLocaleString()}`;
-
-            document.getElementById('annual-asset-start').innerText = `¥${assetStart.toLocaleString()}`;
-            document.getElementById('annual-asset-end').innerText = `¥${assetEnd.toLocaleString()}`;
-            document.getElementById('annual-debt-start').innerText = `¥${debtStart.toLocaleString()}`;
-            document.getElementById('annual-debt-end').innerText = `¥${debtEnd.toLocaleString()}`;
-
-            const ctx = document.getElementById('annualChart').getContext('2d');
-            if (annualChartInstance) annualChartInstance.destroy();
-
-            annualChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
-                    datasets: [
-                        {
-                            label: '收入',
-                            data: monthlyData.map(d => d.inc),
-                            backgroundColor: '#34C759',
-                            borderRadius: 4,
-                            barPercentage: 0.6
-                        },
-                        {
-                            label: '支出',
-                            data: monthlyData.map(d => d.exp),
-                            backgroundColor: '#FF3B30',
-                            borderRadius: 4,
-                            barPercentage: 0.6
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: { duration: 1000, easing: 'easeOutQuart' },
-                    scales: {
-                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-                        y: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#f0f0f0' }, ticks: { display: false } }
-                    },
-                    plugins: {
-                        legend: { position: 'top', align: 'end', labels: { boxWidth: 10, font: { size: 10 }, usePointStyle: true } }
-                    }
-                }
-            });
-        }
-
+        // --- 历史/列表逻辑 ---
         function showHistory(type) {
-            const titles = { income: '收入明细', expense: '支出明细', asset: '资产列表', liability: '负债列表' };
-            const vYear = viewDate.getFullYear();
-            const vMonth = viewDate.getMonth();
-
+            const titles = { income: '收入明细', expense: '支出明细', asset: '本月资产清单', liability: '本月负债清单' };
             document.getElementById('history-title').innerText = titles[type];
             const listEl = document.getElementById('history-list');
             listEl.innerHTML = '';
 
-            const filtered = financeData.records.filter(r => {
-                if (r.type !== type) return false;
-                if (type === 'income' || type === 'expense') {
+            const vYear = viewDate.getFullYear();
+            const vMonth = viewDate.getMonth();
+
+            if (type === 'income' || type === 'expense') {
+                // 收支显示流水
+                const filtered = financeData.records.filter(r => {
                     const rDate = new Date(r.date);
-                    return rDate.getFullYear() === vYear && rDate.getMonth() === vMonth;
-                }
-                return true;
-            });
-
-            if (filtered.length === 0) {
-                listEl.innerHTML = `<div class="flex flex-col items-center justify-center mt-20 opacity-50 list-item-anim"><i class="fas fa-folder-open text-4xl mb-3 text-gray-300"></i><p class="text-sm text-gray-400">暂无相关记录</p></div>`;
-            } else {
-                filtered.reverse().forEach((r, index) => {
-                    const div = document.createElement('div');
-                    div.className = "bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm mb-2 list-item-anim";
-                    div.style.animationDelay = `${index * 0.05}s`;
-                    
-                    const isPositive = r.type==='income'||r.type==='asset';
-                    const sign = r.type==='income' ? '+' : (r.type==='expense' ? '-' : '');
-                    
-                    let subLabel = "";
-                    if(r.type === 'asset') subLabel = (r.subtype === 'fixed') ? ' <span class="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded ml-1">非流动</span>' : ' <span class="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded ml-1">流动</span>';
-                    if(r.type === 'liability') subLabel = (r.subtype === 'long') ? ' <span class="text-[10px] bg-red-50 text-red-500 px-1.5 py-0.5 rounded ml-1">长期</span>' : ' <span class="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded ml-1">短期</span>';
-                    
-                    if(r.type === 'expense') {
-                        subLabel = (r.expenseType === 'fixed') 
-                            ? ' <span class="text-[10px] border border-red-200 text-red-500 px-1.5 py-0.5 rounded ml-1">固定</span>' 
-                            : ''; 
-                    }
-
-                    div.innerHTML = `
-                        <div class="flex items-center gap-3">
-                            <div class="h-10 w-10 rounded-full ${isPositive ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-500'} flex items-center justify-center text-sm">
-                                <i class="fas ${getIcon(r.category || '默认')}"></i>
-                            </div>
-                            <div>
-                                <p class="font-bold text-gray-900 text-[15px]">${r.category || r.name} ${subLabel}</p>
-                                <p class="text-xs text-gray-400 mt-0.5">${r.date.split('T')[0]}</p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                             <p class="font-bold text-lg ${isPositive?'text-green-600':'text-black'}">${sign}¥${parseFloat(r.amount).toLocaleString()}</p>
-                             <button onclick="deleteRecord('${r.id}', '${type}')" class="text-xs text-red-400 mt-1 px-2 py-1 active:bg-red-50 rounded transition-colors">删除</button>
-                        </div>
-                    `;
-                    listEl.appendChild(div);
+                    return r.type === type && rDate.getFullYear() === vYear && rDate.getMonth() === vMonth;
                 });
+                renderTransactionList(listEl, filtered, type);
+            } else {
+                // 资产负债显示快照
+                const snapshot = getMonthlySnapshot(vYear, vMonth);
+                const items = [];
+                Object.keys(snapshot).forEach(name => {
+                    const item = snapshot[name];
+                    if (item.type === type) {
+                        items.push({ name: name, ...item });
+                    }
+                });
+                renderAssetSnapshotList(listEl, items, type);
             }
             openModal('history');
         }
 
-        function getIcon(category) {
-            const map = {
-                '餐饮': 'fa-utensils', '交通': 'fa-car', '购物': 'fa-shopping-bag',
-                '水电气': 'fa-bolt', 
-                '娱乐': 'fa-gamepad', '医疗': 'fa-briefcase-medical', '其他': 'fa-sticky-note',
-                '工资': 'fa-coins', '理财': 'fa-chart-line',
-                '房租': 'fa-house-user', '物业费': 'fa-building', '房贷': 'fa-file-invoice-dollar',
-                '个人贷款': 'fa-credit-card', '汽车贷款': 'fa-car-side',
-                '默认': 'fa-tag'
-            };
-            return map[category] || 'fa-tag';
-        }
-
-        function deleteRecord(id, type) {
-            if (confirm('⚠️ 确定要删除这条记录吗？')) {
-                financeData.records = financeData.records.filter(r => r.id !== id);
-                updateUI();
-                showHistory(type); 
-                if(!document.getElementById('modal-annual').classList.contains('hidden')){
-                    updateAnnualReport();
-                }
+        function renderTransactionList(container, records, type) {
+            if (records.length === 0) {
+                container.innerHTML = `<div class="flex flex-col items-center justify-center mt-20 opacity-50"><p class="text-sm text-gray-400">本月暂无记录</p></div>`;
+                return;
             }
+            records.reverse().forEach((r, index) => {
+                const div = document.createElement('div');
+                div.className = "bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm mb-2 list-item-anim";
+                div.style.animationDelay = `${index * 0.05}s`;
+                
+                let subLabel = "";
+                if(r.type === 'expense' && r.expenseType === 'fixed') subLabel = ' <span class="text-[10px] border border-red-200 text-red-500 px-1.5 py-0.5 rounded ml-1">固定</span>';
+
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 rounded-full ${type==='income' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-500'} flex items-center justify-center text-sm">
+                            <i class="fas ${getIcon(r.category)}"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-gray-900 text-[15px]">${r.category} ${subLabel}</p>
+                            <p class="text-xs text-gray-400 mt-0.5">${r.date.split('T')[0]}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                         <p class="font-bold text-lg ${type==='income'?'text-green-600':'text-black'}">${type==='income'?'+':'-'}¥${parseFloat(r.amount).toLocaleString()}</p>
+                         <button onclick="deleteRecord('${r.id}', '${type}')" class="text-xs text-red-400 mt-1 px-2 py-1 active:bg-red-50 rounded transition-colors">删除</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
         }
 
+        function renderAssetSnapshotList(container, items, type) {
+            if (items.length === 0) {
+                container.innerHTML = `<div class="flex flex-col items-center justify-center mt-20 opacity-50"><p class="text-sm text-gray-400">本月无${type === 'asset' ? '资产' : '负债'}项目</p></div>`;
+                return;
+            }
+            items.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = "bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm mb-2 list-item-anim active:scale-[0.98] transition-transform cursor-pointer";
+                div.style.animationDelay = `${index * 0.05}s`;
+                
+                // 点击直接编辑
+                div.onclick = function() {
+                    closeModal('history');
+                    setTimeout(() => {
+                        openAssetEdit(item.name, item.amount, type, item.subtype);
+                    }, 300);
+                };
+
+                let subLabel = "";
+                if(type === 'asset') subLabel = (item.subtype === 'fixed') ? '非流动' : '流动';
+                else subLabel = (item.subtype === 'long') ? '长期' : '短期';
+                
+                // 标记是否是“继承”的数据
+                const isInherited = item.recordId === null;
+
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 rounded-full ${type==='asset' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-500'} flex items-center justify-center text-sm">
+                            <i class="fas ${type==='asset' ? 'fa-wallet' : 'fa-credit-card'}"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-gray-900 text-[15px]">${item.name}</p>
+                            <p class="text-xs text-gray-400 mt-0.5 bg-gray-100 inline-block px-1.5 rounded">${subLabel}</p>
+                            ${isInherited ? '<span class="text-[10px] text-gray-400 ml-1">(继承上月)</span>' : '<span class="text-[10px] text-blue-500 ml-1">(本月已录入)</span>'}
+                        </div>
+                    </div>
+                    <div class="text-right">
+                         <p class="font-bold text-lg text-black">¥${item.amount.toLocaleString()}</p>
+                         <p class="text-xs text-blue-500 mt-1">修改</p>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // --- 保存逻辑 ---
         function saveRecord(mode) {
-            let recordDate = new Date();
-            if (recordDate.getMonth() !== viewDate.getMonth() || recordDate.getFullYear() !== viewDate.getFullYear()) {
-                recordDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1, 12, 0, 0);
+            // 构造本月的时间戳
+            let recordDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1, 12, 0, 0);
+            
+            // 如果是今天所在的月份，用当前时间（为了排序好看）
+            const now = new Date();
+            if (now.getFullYear() === viewDate.getFullYear() && now.getMonth() === viewDate.getMonth()) {
+                recordDate = now;
             }
 
-            let record = { id: Date.now().toString(), date: recordDate.toISOString() };
-            
             if (mode === 'transaction') {
                 const amt = document.getElementById('t-amount').value;
                 if (!amt) return alert('请填写金额');
-                record.type = currentTransType;
-                record.amount = amt;
-                record.category = document.getElementById('t-category').value;
+                const record = { 
+                    id: Date.now().toString(), 
+                    date: recordDate.toISOString(),
+                    type: currentTransType,
+                    amount: amt,
+                    category: document.getElementById('t-category').value
+                };
                 
                 if(currentTransType === 'expense') {
                     const radios = document.getElementsByName('expense_nature');
@@ -916,10 +818,11 @@
                     for(let r of radios) { if(r.checked) nVal = r.value; }
                     record.expenseType = nVal;
                 }
-
+                financeData.records.push(record);
                 document.getElementById('t-amount').value = '';
                 closeModal('transaction');
-            } else {
+            } 
+            else { // Asset / Liability (快照模式)
                 const amt = document.getElementById('a-amount').value;
                 const name = document.getElementById('a-name').value;
                 if (!amt || !name) return alert('请填写完整信息');
@@ -928,117 +831,286 @@
                 let subVal = 'type1';
                 for(let r of radios) { if(r.checked) subVal = r.value; }
 
-                record.type = currentAssetType;
-                record.amount = amt;
-                record.name = name;
+                // 核心逻辑：检查本月是否已经存在该资产的记录
+                // 1. 查找本月是否已有该名字的记录
+                const vYear = viewDate.getFullYear();
+                const vMonth = viewDate.getMonth();
                 
-                if (currentAssetType === 'asset') {
-                    record.subtype = (subVal === 'type1') ? 'current' : 'fixed';
+                let existingIndex = -1;
+                for(let i=0; i<financeData.records.length; i++) {
+                    const r = financeData.records[i];
+                    if (r.name === name && (r.type === 'asset' || r.type === 'liability')) {
+                        const rDate = new Date(r.date);
+                        if(rDate.getFullYear() === vYear && rDate.getMonth() === vMonth) {
+                            existingIndex = i;
+                            break;
+                        }
+                    }
+                }
+
+                const newRecord = {
+                    id: (existingIndex !== -1) ? financeData.records[existingIndex].id : Date.now().toString(),
+                    date: recordDate.toISOString(),
+                    type: currentAssetType,
+                    amount: amt,
+                    name: name,
+                    subtype: (currentAssetType === 'asset') ? ((subVal === 'type1') ? 'current' : 'fixed') : ((subVal === 'type1') ? 'short' : 'long')
+                };
+
+                if (existingIndex !== -1) {
+                    // 更新本月记录 (Copy-on-write 效果，实际上是 Update-in-place for this month)
+                    financeData.records[existingIndex] = newRecord;
                 } else {
-                    record.subtype = (subVal === 'type1') ? 'short' : 'long';
+                    // 新增本月记录 (不影响以前的)
+                    financeData.records.push(newRecord);
                 }
 
                 document.getElementById('a-amount').value = '';
                 document.getElementById('a-name').value = '';
                 closeModal('asset_input');
             }
-            financeData.records.push(record);
             updateUI();
         }
 
-        function openModal(t) { 
-            const m = document.getElementById(`modal-${t}`);
-            m.classList.remove('hidden'); 
-            // 强制重绘以触发 transition
-            void m.offsetWidth;
-            m.classList.add('modal-enter');
-        }
-        function closeModal(t) { 
-            const m = document.getElementById(`modal-${t}`);
-            m.classList.remove('modal-enter');
-            setTimeout(() => m.classList.add('hidden'), 350); // 等待动画结束
+        function deleteRecord(id, type) {
+            if (confirm('⚠️ 确定要删除这条记录吗？')) {
+                financeData.records = financeData.records.filter(r => r.id !== id);
+                updateUI();
+                // 重新刷新列表
+                if(!document.getElementById('modal-history').classList.contains('hidden')){
+                    showHistory(type);
+                }
+            }
         }
 
+        // --- Annual Report ---
+        function updateAnnualReport() {
+            document.getElementById('report-year-display').innerText = reportYear;
+            
+            // 1. 收支统计 (Flow)
+            let monthlyData = Array.from({length: 12}, () => ({inc: 0, exp: 0}));
+            let yTotalInc = 0, yTotalExp = 0;
+            
+            financeData.records.forEach(r => {
+                if(r.type === 'income' || r.type === 'expense') {
+                    const d = new Date(r.date);
+                    if(d.getFullYear() === reportYear) {
+                        const amt = parseFloat(r.amount);
+                        if(r.type === 'income') { monthlyData[d.getMonth()].inc += amt; yTotalInc += amt; } 
+                        else { monthlyData[d.getMonth()].exp += amt; yTotalExp += amt; }
+                    }
+                }
+            });
+
+            // 2. 资产变动 (Snapshot Start vs End)
+            // 年初：上一年12月的数据，如果没有，取当年1月的数据前推
+            // 简单起见，取当年1月的快照 vs 当年12月(或当前月)的快照
+            
+            const startSnapshot = getMonthlySnapshot(reportYear, 0); // 1月
+            
+            // 如果是当前年份，取当前月作为"年末"，否则取12月
+            const now = new Date();
+            let endMonth = 11;
+            if(reportYear === now.getFullYear()) endMonth = now.getMonth();
+            const endSnapshot = getMonthlySnapshot(reportYear, endMonth);
+
+            let sAsset = 0, sDebt = 0;
+            Object.values(startSnapshot).forEach(v => {
+                if(v.type === 'asset') sAsset += v.amount; else sDebt += v.amount;
+            });
+            
+            let eAsset = 0, eDebt = 0;
+            Object.values(endSnapshot).forEach(v => {
+                if(v.type === 'asset') eAsset += v.amount; else eDebt += v.amount;
+            });
+
+            // 填充汇总
+            document.getElementById('annual-income').innerText = `¥${yTotalInc.toLocaleString()}`;
+            document.getElementById('annual-expense').innerText = `¥${yTotalExp.toLocaleString()}`;
+            document.getElementById('annual-balance').innerText = `¥${(yTotalInc - yTotalExp).toLocaleString()}`;
+            document.getElementById('annual-asset-start').innerText = `¥${sAsset.toLocaleString()}`;
+            document.getElementById('annual-asset-end').innerText = `¥${eAsset.toLocaleString()}`;
+            document.getElementById('annual-debt-start').innerText = `¥${sDebt.toLocaleString()}`;
+            document.getElementById('annual-debt-end').innerText = `¥${eDebt.toLocaleString()}`;
+
+            // 填充资产明细列表
+            const detailList = document.getElementById('annual-asset-detail-list');
+            detailList.innerHTML = '';
+            
+            // 合并所有出现过的名字
+            const allReportNames = new Set([...Object.keys(startSnapshot), ...Object.keys(endSnapshot)]);
+            
+            if(allReportNames.size === 0) {
+                 detailList.innerHTML = '<div class="p-4 text-center text-gray-400 text-xs">暂无资产数据</div>';
+            } else {
+                // 排序：资产在前，负债在后
+                const sortedNames = Array.from(allReportNames).sort((a,b) => {
+                    const typeA = (endSnapshot[a] || startSnapshot[a]).type;
+                    const typeB = (endSnapshot[b] || startSnapshot[b]).type;
+                    if(typeA !== typeB) return typeA === 'asset' ? -1 : 1;
+                    return 0;
+                });
+
+                sortedNames.forEach(name => {
+                    const startVal = startSnapshot[name] ? startSnapshot[name].amount : 0;
+                    const endVal = endSnapshot[name] ? endSnapshot[name].amount : 0;
+                    const info = endSnapshot[name] || startSnapshot[name]; // 获取类型信息
+                    const diff = endVal - startVal;
+                    
+                    const div = document.createElement('div');
+                    div.className = "flex justify-between items-center p-3 border-b border-gray-100 last:border-0 text-sm";
+                    div.innerHTML = `
+                        <div>
+                            <span class="${info.type === 'asset' ? 'text-blue-600 bg-blue-50' : 'text-red-500 bg-red-50'} text-[10px] px-1 rounded mr-1">${info.type==='asset'?'资':'债'}</span>
+                            <span class="font-medium text-gray-700">${name}</span>
+                        </div>
+                        <div class="flex gap-4 text-right">
+                             <div class="flex flex-col">
+                                <span class="text-[10px] text-gray-400">年初</span>
+                                <span class="text-gray-500">¥${startVal.toLocaleString()}</span>
+                             </div>
+                             <div class="flex flex-col">
+                                <span class="text-[10px] text-gray-400">年末</span>
+                                <span class="font-bold text-black">¥${endVal.toLocaleString()}</span>
+                             </div>
+                        </div>
+                    `;
+                    detailList.appendChild(div);
+                });
+            }
+
+            // Chart
+            const ctx = document.getElementById('annualChart').getContext('2d');
+            if (annualChartInstance) annualChartInstance.destroy();
+
+            annualChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
+                    datasets: [
+                        { label: '收入', data: monthlyData.map(d => d.inc), backgroundColor: '#34C759', borderRadius: 4, barPercentage: 0.6 },
+                        { label: '支出', data: monthlyData.map(d => d.exp), backgroundColor: '#FF3B30', borderRadius: 4, barPercentage: 0.6 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { x: { grid: { display: false } }, y: { display: false } },
+                    plugins: { legend: { position: 'top', align: 'end' } }
+                }
+            });
+        }
+
+        // --- Utils & Others ---
+        function updateChartAndList(data, totalExp) {
+            const ctx = document.getElementById('expenseChart').getContext('2d');
+            const legendContainer = document.getElementById('expense-legend');
+            if (expenseChartInstance) expenseChartInstance.destroy();
+            
+            const isEmpty = Object.keys(data).length === 0;
+            const displayData = isEmpty ? { "无": 1 } : data;
+            
+            const colorMap = {
+                '餐饮': '#FF3B30', '交通': '#007AFF', '购物': '#FF9500', '水电气': '#AF52DE', 
+                '娱乐': '#5856D6', '医疗': '#FF2D55', '其他': '#8E8E93', '房租': '#FF9F0A', 
+                '物业费': '#FFD60A', '房贷': '#AC8E68', '个人贷款': '#FF453A', '汽车贷款': '#30B0C7', '无': '#F2F2F7'
+            };
+            
+            expenseChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(displayData),
+                    datasets: [{ data: Object.values(displayData), backgroundColor: Object.keys(displayData).map(l => colorMap[l]||'#8E8E93'), borderWidth: 0 }]
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false, cutout: '75%',
+                    plugins: { legend: { display: false }, tooltip: { enabled: !isEmpty } }
+                }
+            });
+
+            legendContainer.innerHTML = '';
+            if(!isEmpty) {
+                Object.entries(data).sort((a,b) => b[1] - a[1]).forEach(([cat, amount], index) => {
+                    const percent = ((amount / totalExp) * 100).toFixed(1);
+                    const color = colorMap[cat] || '#8E8E93';
+                    const div = document.createElement('div');
+                    div.style.animation = `slideInUpFade 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) forwards`;
+                    div.style.opacity = '0';
+                    div.style.animationDelay = `${index * 0.05}s`;
+                    div.innerHTML = `
+                        <div class="flex items-center justify-between text-sm mb-1">
+                            <div class="flex items-center gap-2"><i class="fas ${getIcon(cat)} w-5 text-center" style="color:${color}"></i><span class="font-medium text-gray-700">${cat}</span></div>
+                            <div class="flex items-center gap-3"><span class="text-xs font-bold text-gray-400">${percent}%</span><span class="font-bold text-gray-900">¥${amount.toLocaleString()}</span></div>
+                        </div>
+                        <div class="rank-bar-bg"><div class="rank-bar-fill" style="width: ${percent}%; background-color: ${color}"></div></div>
+                    `;
+                    legendContainer.appendChild(div);
+                });
+            } else {
+                legendContainer.innerHTML = '<p class="text-center text-xs text-gray-400 py-2">本月暂无支出记录</p>';
+            }
+        }
+
+        function getIcon(c) {
+            const map = { '餐饮':'fa-utensils', '交通':'fa-car', '购物':'fa-shopping-bag', '水电气':'fa-bolt', '娱乐':'fa-gamepad', '医疗':'fa-briefcase-medical', '其他':'fa-sticky-note', '工资':'fa-coins', '理财':'fa-chart-line', '房租':'fa-house-user', '物业费':'fa-building', '房贷':'fa-file-invoice-dollar', '个人贷款':'fa-credit-card', '汽车贷款':'fa-car-side' };
+            return map[c] || 'fa-tag';
+        }
+
+        function openModal(t) { const m = document.getElementById(`modal-${t}`); m.classList.remove('hidden'); void m.offsetWidth; m.classList.add('modal-enter'); }
+        function closeModal(t) { const m = document.getElementById(`modal-${t}`); m.classList.remove('modal-enter'); setTimeout(() => m.classList.add('hidden'), 350); }
+        function openAnnualReport() { reportYear = new Date().getFullYear(); updateAnnualReport(); openModal('annual'); }
+        function changeReportYear(d) { reportYear += d; updateAnnualReport(); }
+        
         function setTransType(t) {
             currentTransType = t;
-            const activeClass = "flex-1 py-2 rounded-lg text-[15px] font-medium shadow-sm bg-white text-black transition-all duration-300 transform";
-            const inactiveClass = "flex-1 py-2 rounded-lg text-[15px] font-medium text-gray-500 transition-all duration-300";
-            document.getElementById('btn-expense').className = t==='expense'?activeClass:inactiveClass;
-            document.getElementById('btn-income').className = t==='income'?activeClass:inactiveClass;
-            
-            const natureSelector = document.getElementById('expense-type-selector');
-            if(t === 'expense') {
-                natureSelector.classList.remove('hidden');
-                updateCategoryOptions('expense');
-            } else {
-                natureSelector.classList.add('hidden');
-                updateCategoryOptions('income');
-            }
+            const a = "flex-1 py-2 rounded-lg text-[15px] font-medium shadow-sm bg-white text-black transition-all duration-300";
+            const i = "flex-1 py-2 rounded-lg text-[15px] font-medium text-gray-500 transition-all duration-300";
+            document.getElementById('btn-expense').className = t==='expense'?a:i;
+            document.getElementById('btn-income').className = t==='income'?a:i;
+            document.getElementById('expense-type-selector').classList.toggle('hidden', t!=='expense');
+            updateCategoryOptions(t);
         }
 
         function updateCategoryOptions(type) {
-            const select = document.getElementById('t-category');
-            select.innerHTML = '';
-            
+            const select = document.getElementById('t-category'); select.innerHTML = '';
             let list = [];
-            
-            if (type === 'income') {
-                list = categories.income;
-            } else if (type === 'expense') {
+            if (type === 'income') list = categories.income;
+            else {
                 const radios = document.getElementsByName('expense_nature');
-                let isFixed = false;
-                for(let r of radios) { 
-                    if(r.checked && r.value === 'fixed') isFixed = true; 
-                }
+                let isFixed = false; for(let r of radios) { if(r.checked && r.value === 'fixed') isFixed = true; }
                 list = isFixed ? categories.expense_fixed : categories.expense_variable;
             }
-
-            list.forEach(c => {
-                const opt = document.createElement('option');
-                opt.value = c.val;
-                opt.innerText = c.label;
-                select.appendChild(opt);
-            });
+            list.forEach(c => { const o = document.createElement('option'); o.value = c.val; o.innerText = c.label; select.appendChild(o); });
         }
 
         function setAssetType(t) {
             currentAssetType = t;
-            const activeClass = "flex-1 py-2 rounded-lg text-[15px] font-medium shadow-sm bg-white text-black transition-all";
-            const inactiveClass = "flex-1 py-2 rounded-lg text-[15px] font-medium text-gray-500 transition-all";
-            document.getElementById('btn-asset').className = t==='asset'?activeClass:inactiveClass;
-            document.getElementById('btn-liability').className = t==='liability'?activeClass:inactiveClass;
-
-            const l1 = document.getElementById('subtype-label-1');
-            const l2 = document.getElementById('subtype-label-2');
-            
-            if (t === 'asset') {
-                l1.innerText = "流动资产 (现金)";
-                l2.innerText = "非流动资产 (房车)";
-            } else {
-                l1.innerText = "短期负债 (<1年)";
-                l2.innerText = "长期负债 (>1年)";
-            }
+            const a = "flex-1 py-2 rounded-lg text-[15px] font-medium shadow-sm bg-white text-black transition-all";
+            const i = "flex-1 py-2 rounded-lg text-[15px] font-medium text-gray-500 transition-all";
+            document.getElementById('btn-asset').className = t==='asset'?a:i;
+            document.getElementById('btn-liability').className = t==='liability'?a:i;
+            document.getElementById('subtype-label-1').innerText = t==='asset' ? "流动资产 (现金)" : "短期负债 (<1年)";
+            document.getElementById('subtype-label-2').innerText = t==='asset' ? "非流动资产 (房车)" : "长期负债 (>1年)";
         }
+        
+        // Reset Modal State when closing
+        document.getElementById('modal-asset_input').addEventListener('transitionend', function(e) {
+             if(this.classList.contains('hidden')) {
+                 // Reset to Create Mode
+                 document.getElementById('asset-modal-title').innerText = "资产/负债录入";
+                 document.getElementById('a-name').value = '';
+                 document.getElementById('a-name').disabled = false;
+                 document.getElementById('a-amount').value = '';
+                 document.getElementById('asset-type-switch').classList.remove('opacity-50', 'pointer-events-none');
+             }
+        });
 
         function exportData() {
             const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(JSON.stringify(financeData));
-            const a = document.createElement('a');
-            a.setAttribute('href', dataUri);
-            a.setAttribute('download', `FinPro_Backup_${new Date().toISOString().slice(0,10)}.json`);
-            a.click();
+            const a = document.createElement('a'); a.href = dataUri; a.download = `FinPro_${new Date().toISOString().slice(0,10)}.json`; a.click();
         }
-
         function importData(input) {
             const reader = new FileReader();
-            reader.onload = e => {
-                try {
-                    financeData = JSON.parse(e.target.result);
-                    updateUI();
-                    alert('数据恢复成功！');
-                } catch(err) {
-                    alert('文件格式错误');
-                }
-            };
+            reader.onload = e => { try { financeData = JSON.parse(e.target.result); updateUI(); alert('恢复成功'); } catch(err) { alert('文件错误'); } };
             reader.readAsText(input.files[0]);
         }
     </script>
