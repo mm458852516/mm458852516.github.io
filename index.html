@@ -766,13 +766,17 @@
             });
         }
 
-        // 修改：在资产/负债清单中添加删除按钮逻辑
+        // 修改：在资产/负债清单渲染时，隐藏金额为0的项目
         function renderAssetSnapshotList(container, items, type) {
-            if (items.length === 0) {
+            // 1. 先过滤掉金额为 0 的项目
+            const activeItems = items.filter(item => Math.abs(parseFloat(item.amount)) > 0.01);
+
+            if (activeItems.length === 0) {
                 container.innerHTML = `<div class="flex flex-col items-center justify-center mt-20 opacity-50"><p class="text-sm text-gray-400">本月无${type === 'asset' ? '资产' : '负债'}项目</p></div>`;
                 return;
             }
-            items.forEach((item, index) => {
+
+            activeItems.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = "bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm mb-2 list-item-anim active:scale-[0.98] transition-transform cursor-pointer";
                 div.style.animationDelay = `${index * 0.05}s`;
@@ -793,8 +797,10 @@
                 const isInherited = item.recordId === null;
                 
                 // 只有本月确实录入过（recordId不为空）的才能直接删除
+                // 注意：删除意味着“撤销本月的修改”，如果本月修改为0，删除后会变回上个月的值。
+                // 要想彻底“删除”一个资产，正确的做法是将其金额修改为 0（本函数已通过过滤0值实现了视觉上的删除）。
                 const deleteBtn = !isInherited ? 
-                    `<button onclick="deleteRecord('${item.recordId}', '${type}'); event.stopPropagation();" class="text-xs text-red-500 mt-2 px-2 py-1 bg-red-50 rounded">删除</button>` 
+                    `<button onclick="deleteRecord('${item.recordId}', '${type}'); event.stopPropagation();" class="text-xs text-red-500 mt-2 px-2 py-1 bg-red-50 rounded">撤销本月记录</button>` 
                     : '';
 
                 div.innerHTML = `
@@ -805,7 +811,7 @@
                         <div>
                             <p class="font-bold text-gray-900 text-[15px]">${item.name}</p>
                             <p class="text-xs text-gray-400 mt-0.5 bg-gray-100 inline-block px-1.5 rounded">${subLabel}</p>
-                            ${isInherited ? '<span class="text-[10px] text-gray-400 ml-1">(继承上月)</span>' : '<span class="text-[10px] text-blue-500 ml-1">(本月已录入)</span>'}
+                            ${isInherited ? '<span class="text-[10px] text-gray-400 ml-1">(继承上月)</span>' : '<span class="text-[10px] text-blue-500 ml-1">(本月已更新)</span>'}
                         </div>
                     </div>
                     <div class="text-right flex flex-col items-end">
