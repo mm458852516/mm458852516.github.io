@@ -40,13 +40,14 @@
             padding-bottom: env(safe-area-inset-bottom);
         }
         
-        /* 导航栏适配优化 */
+        /* 
+           修改点1：导航栏去除模糊，去除边框，背景改为纯色以覆盖滚动内容 
+           改为 position: sticky 也可以，但这里保持 fixed 并配合纯色背景
+        */
         .glass-nav {
             position: fixed; top: 0; left: 0; right: 0; z-index: 50;
-            background: rgba(242, 242, 247, 0.85);
-            backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border-bottom: 0.5px solid rgba(0,0,0,0.1);
-            /* 稍微增加一点顶部padding，让内容不顶格 */
+            background: #F2F2F7; /* 纯色背景，无透明度 */
+            /* 移除了 backdrop-filter 和 border-bottom */
             padding-top: calc(env(safe-area-inset-top) + 8px); 
             padding-bottom: 12px;
             transition: background 0.3s ease;
@@ -108,20 +109,33 @@
 
         .btn-ios { transition: transform 0.2s, background-color 0.2s; }
         .btn-ios:active { transform: scale(0.97); }
+
+        /* 新增：年报悬浮时间选择器样式 */
+        .floating-year-selector {
+            position: fixed;
+            bottom: calc(env(safe-area-inset-bottom) + 30px);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 70;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            border-radius: 999px;
+            padding: 4px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
     </style>
 </head>
 <body class="antialiased">
 
-    <!-- 顶部导航栏 (优化版：移除拥挤的文字，增加留白) -->
+    <!-- 顶部导航栏 (修改版：去除模糊，去除箭头) -->
     <div class="glass-nav">
         <div class="px-5 flex justify-between items-center">
             <div class="date-trigger-wrapper btn-ios active:opacity-70">
-                <!-- 移除了 "Total Balance" 标签，减少视觉干扰 -->
                 <div class="flex items-center gap-2 py-1">
+                    <!-- 修改点2：删除了 chevron-down 图标 -->
                     <h1 class="text-3xl font-bold tracking-tight text-black leading-none" id="current-date">...</h1>
-                    <div class="bg-gray-200/80 rounded-full h-6 w-6 flex items-center justify-center backdrop-blur-md">
-                        <i class="fas fa-chevron-down text-[10px] text-gray-600"></i>
-                    </div>
                 </div>
                 <input type="month" class="native-date-input" onchange="handleDateChange(this)">
             </div>
@@ -405,7 +419,8 @@
     <!-- 弹窗：年度报告 -->
     <div id="modal-annual" class="fixed inset-0 z-[60] hidden">
         <div class="absolute inset-0 bg-white modal-overlay overflow-y-auto opacity-100">
-            <div class="p-5" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
+            <!-- 修改点3：增加底部 padding，防止内容被悬浮按钮遮挡 -->
+            <div class="p-5" style="padding-bottom: calc(env(safe-area-inset-bottom) + 80px);">
                 <!-- Header -->
                 <div class="flex justify-between items-center mb-6 pt-2 sticky top-0 bg-white/90 backdrop-blur z-10 py-2">
                     <button onclick="closeModal('annual')" class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 active:scale-90 transition-transform">
@@ -413,15 +428,6 @@
                     </button>
                     <h2 class="text-lg font-bold">年度财务报告</h2>
                     <div class="w-8"></div>
-                </div>
-
-                <!-- 年份切换 -->
-                <div class="flex justify-center mb-6">
-                    <div class="bg-gray-100 p-1 rounded-xl flex items-center shadow-inner">
-                        <button onclick="changeReportYear(-1)" class="w-10 h-8 flex items-center justify-center text-gray-500 active:scale-90 transition-transform"><i class="fas fa-chevron-left"></i></button>
-                        <span class="px-4 font-bold text-lg tabular-nums" id="report-year-display">2026</span>
-                        <button onclick="changeReportYear(1)" class="w-10 h-8 flex items-center justify-center text-gray-500 active:scale-90 transition-transform"><i class="fas fa-chevron-right"></i></button>
-                    </div>
                 </div>
 
                 <!-- 资产变动情况 (汇总) -->
@@ -490,6 +496,15 @@
                     <div class="bg-white rounded-2xl border border-gray-100 p-4 mb-8 shadow-sm h-64">
                         <canvas id="annualChart"></canvas>
                     </div>
+                </div>
+            </div>
+
+            <!-- 修改点4：年份切换悬浮条 (置于 modal-annual 容器内，但 fixed 到底部) -->
+            <div class="floating-year-selector">
+                <div class="flex items-center">
+                    <button onclick="changeReportYear(-1)" class="w-10 h-8 flex items-center justify-center text-gray-500 active:scale-90 transition-transform"><i class="fas fa-chevron-left"></i></button>
+                    <span class="px-3 font-bold text-lg tabular-nums" id="report-year-display">2026</span>
+                    <button onclick="changeReportYear(1)" class="w-10 h-8 flex items-center justify-center text-gray-500 active:scale-90 transition-transform"><i class="fas fa-chevron-right"></i></button>
                 </div>
             </div>
         </div>
