@@ -16,11 +16,10 @@
         
         /* 禁止长按选中文本 (App质感) */
         * {
-            -webkit-user-select: none; /* Safari / Chrome */
+            -webkit-user-select: none;
             user-select: none;
-            -webkit-touch-callout: none; /* 禁止iOS长按菜单 */
+            -webkit-touch-callout: none;
         }
-        /* 允许输入框可选中编辑 */
         input, textarea {
             -webkit-user-select: auto;
             user-select: auto;
@@ -41,15 +40,15 @@
             padding-bottom: env(safe-area-inset-bottom);
         }
         
-        /* 导航栏适配优化：居中对齐，增加顶部间距适配刘海屏 */
+        /* 导航栏适配优化 */
         .glass-nav {
             position: fixed; top: 0; left: 0; right: 0; z-index: 50;
             background: rgba(242, 242, 247, 0.85);
             backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
             border-bottom: 0.5px solid rgba(0,0,0,0.1);
-            /* 增加顶部留白，优化 12 mini 显示 */
-            padding-top: calc(env(safe-area-inset-top) + 2px); 
-            padding-bottom: 10px;
+            /* 稍微增加一点顶部padding，让内容不顶格 */
+            padding-top: calc(env(safe-area-inset-top) + 8px); 
+            padding-bottom: 12px;
             transition: background 0.3s ease;
         }
 
@@ -113,24 +112,21 @@
 </head>
 <body class="antialiased">
 
-    <!-- 顶部导航栏 -->
+    <!-- 顶部导航栏 (优化版：移除拥挤的文字，增加留白) -->
     <div class="glass-nav">
-        <div class="px-5 flex justify-between items-end">
+        <div class="px-5 flex justify-between items-center">
             <div class="date-trigger-wrapper btn-ios active:opacity-70">
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-0.5">Total Balance</p>
-                <div class="flex items-center gap-2">
-                    <!-- 字体稍微加大一点点，增强层级 -->
-                    <h1 class="text-[26px] font-bold tracking-tight text-black leading-none" id="current-date">...</h1>
-                    <div class="bg-gray-200/80 rounded-full h-5 w-5 flex items-center justify-center backdrop-blur-md mb-0.5">
+                <!-- 移除了 "Total Balance" 标签，减少视觉干扰 -->
+                <div class="flex items-center gap-2 py-1">
+                    <h1 class="text-3xl font-bold tracking-tight text-black leading-none" id="current-date">...</h1>
+                    <div class="bg-gray-200/80 rounded-full h-6 w-6 flex items-center justify-center backdrop-blur-md">
                         <i class="fas fa-chevron-down text-[10px] text-gray-600"></i>
                     </div>
                 </div>
                 <input type="month" class="native-date-input" onchange="handleDateChange(this)">
             </div>
             
-            <!-- 年报入口 -->
-            <!-- 增加 mb-0.5 稍微修正视觉对齐 -->
-            <button onclick="openAnnualReport()" class="mb-0.5 h-8 px-3 bg-blue-500/10 text-blue-600 rounded-full flex items-center gap-1 text-xs font-bold active:bg-blue-500/20 active:scale-95 transition-all">
+            <button onclick="openAnnualReport()" class="h-9 px-4 bg-blue-500/10 text-blue-600 rounded-full flex items-center gap-1.5 text-xs font-bold active:bg-blue-500/20 active:scale-95 transition-all">
                 <i class="fas fa-chart-pie"></i> 年报
             </button>
         </div>
@@ -747,6 +743,7 @@
             });
         }
 
+        // 修改：在资产/负债清单中添加删除按钮逻辑
         function renderAssetSnapshotList(container, items, type) {
             if (items.length === 0) {
                 container.innerHTML = `<div class="flex flex-col items-center justify-center mt-20 opacity-50"><p class="text-sm text-gray-400">本月无${type === 'asset' ? '资产' : '负债'}项目</p></div>`;
@@ -771,6 +768,11 @@
                 
                 // 标记是否是“继承”的数据
                 const isInherited = item.recordId === null;
+                
+                // 只有本月确实录入过（recordId不为空）的才能直接删除
+                const deleteBtn = !isInherited ? 
+                    `<button onclick="deleteRecord('${item.recordId}', '${type}'); event.stopPropagation();" class="text-xs text-red-500 mt-2 px-2 py-1 bg-red-50 rounded">删除</button>` 
+                    : '';
 
                 div.innerHTML = `
                     <div class="flex items-center gap-3">
@@ -783,9 +785,12 @@
                             ${isInherited ? '<span class="text-[10px] text-gray-400 ml-1">(继承上月)</span>' : '<span class="text-[10px] text-blue-500 ml-1">(本月已录入)</span>'}
                         </div>
                     </div>
-                    <div class="text-right">
+                    <div class="text-right flex flex-col items-end">
                          <p class="font-bold text-lg text-black">¥${item.amount.toLocaleString()}</p>
-                         <p class="text-xs text-blue-500 mt-1">修改</p>
+                         <div class="flex gap-2">
+                             ${deleteBtn}
+                             <p class="text-xs text-blue-500 mt-2 py-1">修改</p>
+                         </div>
                     </div>
                 `;
                 container.appendChild(div);
