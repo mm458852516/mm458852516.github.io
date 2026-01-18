@@ -40,14 +40,9 @@
             padding-bottom: env(safe-area-inset-bottom);
         }
         
-        /* 
-           修改点1：导航栏去除模糊，去除边框，背景改为纯色以覆盖滚动内容 
-           改为 position: sticky 也可以，但这里保持 fixed 并配合纯色背景
-        */
         .glass-nav {
             position: fixed; top: 0; left: 0; right: 0; z-index: 50;
-            background: #F2F2F7; /* 纯色背景，无透明度 */
-            /* 移除了 backdrop-filter 和 border-bottom */
+            background: #F2F2F7;
             padding-top: calc(env(safe-area-inset-top) + 8px); 
             padding-bottom: 12px;
             transition: background 0.3s ease;
@@ -110,7 +105,6 @@
         .btn-ios { transition: transform 0.2s, background-color 0.2s; }
         .btn-ios:active { transform: scale(0.97); }
 
-        /* 新增：年报悬浮时间选择器样式 */
         .floating-year-selector {
             position: fixed;
             bottom: calc(env(safe-area-inset-bottom) + 30px);
@@ -129,12 +123,11 @@
 </head>
 <body class="antialiased">
 
-    <!-- 顶部导航栏 (修改版：去除模糊，去除箭头) -->
+    <!-- 顶部导航栏 -->
     <div class="glass-nav">
         <div class="px-5 flex justify-between items-center">
             <div class="date-trigger-wrapper btn-ios active:opacity-70">
                 <div class="flex items-center gap-2 py-1">
-                    <!-- 修改点2：删除了 chevron-down 图标 -->
                     <h1 class="text-3xl font-bold tracking-tight text-black leading-none" id="current-date">...</h1>
                 </div>
                 <input type="month" class="native-date-input" onchange="handleDateChange(this)">
@@ -418,12 +411,7 @@
 
     <!-- 弹窗：年度报告 -->
     <div id="modal-annual" class="fixed inset-0 z-[60] hidden">
-        <!-- 
-           1. 滚动区域层 (modal-overlay) 
-           注意：这里负责背景和内容滚动
-        -->
         <div class="absolute inset-0 bg-white modal-overlay overflow-y-auto opacity-100">
-            <!-- 增加底部 padding，防止内容被悬浮按钮遮挡 -->
             <div class="p-5" style="padding-bottom: calc(env(safe-area-inset-bottom) + 100px);">
                 <!-- Header -->
                 <div class="flex justify-between items-center mb-6 pt-2 sticky top-0 bg-white/90 backdrop-blur z-10 py-2">
@@ -504,11 +492,6 @@
             </div>
         </div>
 
-        <!-- 
-            2. 悬浮控制器层
-            修改点：将它移到了 modal-overlay 之外，作为兄弟节点。
-            这样无论 modal-overlay 里的内容怎么滚动，这个 div 都是相对于浏览器窗口定位的。
-        -->
         <div class="floating-year-selector pointer-events-auto">
             <div class="flex items-center">
                 <button onclick="changeReportYear(-1)" class="w-10 h-8 flex items-center justify-center text-gray-500 active:scale-90 transition-transform"><i class="fas fa-chevron-left"></i></button>
@@ -562,7 +545,6 @@
         }
 
         // --- 核心逻辑：获取某月资产快照 ---
-        // 返回：{ '招行卡': {amount: 1000, type: 'asset', subtype: 'current', recordId: '123' or null} }
         function getMonthlySnapshot(year, month) {
             // 1. 找出所有出现过的资产名称
             const allNames = new Set();
@@ -575,7 +557,6 @@
             const targetTime = new Date(year, month + 1, 0, 23, 59, 59).getTime(); // 月末
 
             allNames.forEach(name => {
-                // 找到该名字所有记录，按时间倒序
                 const history = financeData.records
                     .filter(r => r.name === name)
                     .filter(r => new Date(r.date).getTime() <= targetTime)
@@ -583,7 +564,6 @@
 
                 if(history.length > 0) {
                     const latest = history[0];
-                    // 检查最新这条记录是否正好是当前选中月份的
                     const rDate = new Date(latest.date);
                     const isCurrentMonth = (rDate.getFullYear() === year && rDate.getMonth() === month);
                     
@@ -591,7 +571,7 @@
                         amount: parseFloat(latest.amount),
                         type: latest.type,
                         subtype: latest.subtype,
-                        recordId: isCurrentMonth ? latest.id : null, // 只有本月有显式记录才有ID
+                        recordId: isCurrentMonth ? latest.id : null,
                         date: latest.date
                     };
                 }
@@ -766,16 +746,15 @@
             });
         }
 
-        // 修改：在资产/负债清单渲染时，隐藏金额为0的项目
+        // 修改点：只在这里加了过滤0的逻辑，确保顶部总金额不会出错
         function renderAssetSnapshotList(container, items, type) {
-            // 1. 先过滤掉金额为 0 的项目
+            // 过滤：只有金额 > 0 的才显示在列表中
             const activeItems = items.filter(item => Math.abs(parseFloat(item.amount)) > 0.01);
 
             if (activeItems.length === 0) {
                 container.innerHTML = `<div class="flex flex-col items-center justify-center mt-20 opacity-50"><p class="text-sm text-gray-400">本月无${type === 'asset' ? '资产' : '负债'}项目</p></div>`;
                 return;
             }
-
             activeItems.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = "bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm mb-2 list-item-anim active:scale-[0.98] transition-transform cursor-pointer";
@@ -793,12 +772,9 @@
                 if(type === 'asset') subLabel = (item.subtype === 'fixed') ? '非流动' : '流动';
                 else subLabel = (item.subtype === 'long') ? '长期' : '短期';
                 
-                // 标记是否是“继承”的数据
                 const isInherited = item.recordId === null;
                 
-                // 只有本月确实录入过（recordId不为空）的才能直接删除
-                // 注意：删除意味着“撤销本月的修改”，如果本月修改为0，删除后会变回上个月的值。
-                // 要想彻底“删除”一个资产，正确的做法是将其金额修改为 0（本函数已通过过滤0值实现了视觉上的删除）。
+                // 删除按钮逻辑
                 const deleteBtn = !isInherited ? 
                     `<button onclick="deleteRecord('${item.recordId}', '${type}'); event.stopPropagation();" class="text-xs text-red-500 mt-2 px-2 py-1 bg-red-50 rounded">撤销本月记录</button>` 
                     : '';
@@ -828,10 +804,8 @@
 
         // --- 保存逻辑 ---
         function saveRecord(mode) {
-            // 构造本月的时间戳
             let recordDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1, 12, 0, 0);
             
-            // 如果是今天所在的月份，用当前时间（为了排序好看）
             const now = new Date();
             if (now.getFullYear() === viewDate.getFullYear() && now.getMonth() === viewDate.getMonth()) {
                 recordDate = now;
@@ -858,7 +832,7 @@
                 document.getElementById('t-amount').value = '';
                 closeModal('transaction');
             } 
-            else { // Asset / Liability (快照模式)
+            else { // Asset / Liability
                 const amt = document.getElementById('a-amount').value;
                 const name = document.getElementById('a-name').value;
                 if (!amt || !name) return alert('请填写完整信息');
@@ -867,8 +841,6 @@
                 let subVal = 'type1';
                 for(let r of radios) { if(r.checked) subVal = r.value; }
 
-                // 核心逻辑：检查本月是否已经存在该资产的记录
-                // 1. 查找本月是否已有该名字的记录
                 const vYear = viewDate.getFullYear();
                 const vMonth = viewDate.getMonth();
                 
@@ -894,10 +866,8 @@
                 };
 
                 if (existingIndex !== -1) {
-                    // 更新本月记录 (Copy-on-write 效果，实际上是 Update-in-place for this month)
                     financeData.records[existingIndex] = newRecord;
                 } else {
-                    // 新增本月记录 (不影响以前的)
                     financeData.records.push(newRecord);
                 }
 
@@ -909,10 +879,9 @@
         }
 
         function deleteRecord(id, type) {
-            if (confirm('⚠️ 确定要删除这条记录吗？')) {
+            if (confirm('⚠️ 确定要撤销本条记录吗？')) {
                 financeData.records = financeData.records.filter(r => r.id !== id);
                 updateUI();
-                // 重新刷新列表
                 if(!document.getElementById('modal-history').classList.contains('hidden')){
                     showHistory(type);
                 }
@@ -923,7 +892,6 @@
         function updateAnnualReport() {
             document.getElementById('report-year-display').innerText = reportYear;
             
-            // 1. 收支统计 (Flow)
             let monthlyData = Array.from({length: 12}, () => ({inc: 0, exp: 0}));
             let yTotalInc = 0, yTotalExp = 0;
             
@@ -938,13 +906,7 @@
                 }
             });
 
-            // 2. 资产变动 (Snapshot Start vs End)
-            // 年初：上一年12月的数据，如果没有，取当年1月的数据前推
-            // 简单起见，取当年1月的快照 vs 当年12月(或当前月)的快照
-            
-            const startSnapshot = getMonthlySnapshot(reportYear, 0); // 1月
-            
-            // 如果是当前年份，取当前月作为"年末"，否则取12月
+            const startSnapshot = getMonthlySnapshot(reportYear, 0); 
             const now = new Date();
             let endMonth = 11;
             if(reportYear === now.getFullYear()) endMonth = now.getMonth();
@@ -960,7 +922,6 @@
                 if(v.type === 'asset') eAsset += v.amount; else eDebt += v.amount;
             });
 
-            // 填充汇总
             document.getElementById('annual-income').innerText = `¥${yTotalInc.toLocaleString()}`;
             document.getElementById('annual-expense').innerText = `¥${yTotalExp.toLocaleString()}`;
             document.getElementById('annual-balance').innerText = `¥${(yTotalInc - yTotalExp).toLocaleString()}`;
@@ -969,17 +930,14 @@
             document.getElementById('annual-debt-start').innerText = `¥${sDebt.toLocaleString()}`;
             document.getElementById('annual-debt-end').innerText = `¥${eDebt.toLocaleString()}`;
 
-            // 填充资产明细列表
             const detailList = document.getElementById('annual-asset-detail-list');
             detailList.innerHTML = '';
             
-            // 合并所有出现过的名字
             const allReportNames = new Set([...Object.keys(startSnapshot), ...Object.keys(endSnapshot)]);
             
             if(allReportNames.size === 0) {
                  detailList.innerHTML = '<div class="p-4 text-center text-gray-400 text-xs">暂无资产数据</div>';
             } else {
-                // 排序：资产在前，负债在后
                 const sortedNames = Array.from(allReportNames).sort((a,b) => {
                     const typeA = (endSnapshot[a] || startSnapshot[a]).type;
                     const typeB = (endSnapshot[b] || startSnapshot[b]).type;
@@ -991,11 +949,9 @@
                     const startVal = startSnapshot[name] ? startSnapshot[name].amount : 0;
                     const endVal = endSnapshot[name] ? endSnapshot[name].amount : 0;
                     
-                    // --- 新增逻辑：如果年初和年末都是 0，则不显示该项目 ---
-                    if (Math.abs(startVal) < 0.01 && Math.abs(endVal) < 0.01) return;
-                    // --------------------------------------------------
-
-                    const info = endSnapshot[name] || startSnapshot[name]; // 获取类型信息
+                    // 年报中如果年末金额为0，也应该显示一下（表示已结清），或者也可以选择隐藏
+                    // 这里保持显示，以便查看变动
+                    const info = endSnapshot[name] || startSnapshot[name]; 
                     
                     const div = document.createElement('div');
                     div.className = "flex justify-between items-center p-3 border-b border-gray-100 last:border-0 text-sm";
@@ -1017,8 +973,8 @@
                     `;
                     detailList.appendChild(div);
                 });
+            }
 
-            // Chart
             const ctx = document.getElementById('annualChart').getContext('2d');
             if (annualChartInstance) annualChartInstance.destroy();
 
@@ -1039,7 +995,6 @@
             });
         }
 
-        // --- Utils & Others ---
         function updateChartAndList(data, totalExp) {
             const ctx = document.getElementById('expenseChart').getContext('2d');
             const legendContainer = document.getElementById('expense-legend');
@@ -1131,10 +1086,8 @@
             document.getElementById('subtype-label-2').innerText = t==='asset' ? "非流动资产 (房车)" : "长期负债 (>1年)";
         }
         
-        // Reset Modal State when closing
         document.getElementById('modal-asset_input').addEventListener('transitionend', function(e) {
              if(this.classList.contains('hidden')) {
-                 // Reset to Create Mode
                  document.getElementById('asset-modal-title').innerText = "资产/负债录入";
                  document.getElementById('a-name').value = '';
                  document.getElementById('a-name').disabled = false;
