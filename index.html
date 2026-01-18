@@ -77,12 +77,13 @@
             transition: background 0.3s ease;
         }
         
-        /* 深色模式：纯黑半透明 */
+        /* 深色模式：修改此处，移除模糊，使用纯黑背景 */
         @media (prefers-color-scheme: dark) {
             .glass-nav {
-                /* 修改此处：使用纯黑底色，保留模糊效果 */
-                background: rgba(0, 0, 0, 0.85);
-                border-bottom: 1px solid rgba(255,255,255,0.08); /* 微微发亮的分割线 */
+                background: #000000; /* 纯黑不透明 */
+                backdrop-filter: none; /* 移除高斯模糊 */
+                -webkit-backdrop-filter: none;
+                border-bottom: 1px solid rgba(255,255,255,0.15); /* 稍微明显的分割线 */
             }
         }
 
@@ -128,6 +129,13 @@
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
         }
+        
+        /* 性能优化：年报弹窗本身不透明，禁用背景模糊以解决关闭时的卡顿 */
+        #modal-annual .modal-overlay {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+
         @media (prefers-color-scheme: dark) {
             .modal-overlay { background: rgba(0,0,0,0.6); }
         }
@@ -488,7 +496,8 @@
             <div class="p-5" style="padding-bottom: calc(env(safe-area-inset-bottom) + 100px);">
                 <!-- Header -->
                 <div class="flex justify-between items-center mb-6 pt-2 sticky top-0 bg-white/90 dark:bg-black/90 backdrop-blur z-10 py-2">
-                    <button onclick="closeModal('annual')" class="h-8 w-8 rounded-full bg-gray-100 dark:bg-[#2C2C2E] flex items-center justify-center text-gray-600 dark:text-gray-300 active:scale-90 transition-transform">
+                    <!-- 修改关闭按钮调用方法 -->
+                    <button onclick="closeAnnualReport()" class="h-8 w-8 rounded-full bg-gray-100 dark:bg-[#2C2C2E] flex items-center justify-center text-gray-600 dark:text-gray-300 active:scale-90 transition-transform">
                         <i class="fas fa-arrow-left"></i>
                     </button>
                     <h2 class="text-lg font-bold text-black dark:text-white">年度财务报告</h2>
@@ -1158,6 +1167,21 @@
 
         function openModal(t) { const m = document.getElementById(`modal-${t}`); m.classList.remove('hidden'); void m.offsetWidth; m.classList.add('modal-enter'); }
         function closeModal(t) { const m = document.getElementById(`modal-${t}`); m.classList.remove('modal-enter'); setTimeout(() => m.classList.add('hidden'), 350); }
+        
+        // --- 修复点：年报关闭逻辑 ---
+        function closeAnnualReport() {
+            closeModal('annual');
+            // 在动画结束时销毁图表，释放内存并防止重绘导致的卡顿
+            setTimeout(() => {
+                if(annualChartInstance) {
+                    annualChartInstance.destroy();
+                    annualChartInstance = null;
+                }
+                // 清空列表，减少DOM节点
+                document.getElementById('annual-asset-detail-list').innerHTML = '';
+            }, 350);
+        }
+
         function openAnnualReport() { reportYear = new Date().getFullYear(); updateAnnualReport(); openModal('annual'); }
         function changeReportYear(d) { reportYear += d; updateAnnualReport(); }
         
