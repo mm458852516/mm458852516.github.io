@@ -284,7 +284,7 @@
                     <i class="fas fa-cloud-upload-alt text-2xl text-green-500"></i>
                     <span class="text-xs font-medium">恢复数据</span>
                 </button>
-                <input type="file" id="importFile" style="display:none" onchange="importData(this)">
+                <input type="file" id="importFile" style="display:none" onchange="importData(this)" accept=".json">
             </div>
             <p class="text-center text-[10px] text-gray-400 mt-8 mb-4">Data stored locally on device</p>
         </section>
@@ -746,7 +746,6 @@
             });
         }
 
-        // 修改点：只在这里加了过滤0的逻辑，确保顶部总金额不会出错
         function renderAssetSnapshotList(container, items, type) {
             // 过滤：只有金额 > 0 的才显示在列表中
             const activeItems = items.filter(item => Math.abs(parseFloat(item.amount)) > 0.01);
@@ -946,11 +945,14 @@
                 });
 
                 sortedNames.forEach(name => {
-                    const startVal = startSnapshot[name] ? startSnapshot[name].amount : 0;
-                    const endVal = endSnapshot[name] ? endSnapshot[name].amount : 0;
+                    const startVal = startSnapshot[name] ? parseFloat(startSnapshot[name].amount) : 0;
+                    const endVal = endSnapshot[name] ? parseFloat(endSnapshot[name].amount) : 0;
+
+                    // --- 修复点：如果年初和年末都是0，则不显示 ---
+                    if (Math.abs(startVal) < 0.01 && Math.abs(endVal) < 0.01) {
+                        return; 
+                    }
                     
-                    // 年报中如果年末金额为0，也应该显示一下（表示已结清），或者也可以选择隐藏
-                    // 这里保持显示，以便查看变动
                     const info = endSnapshot[name] || startSnapshot[name]; 
                     
                     const div = document.createElement('div');
@@ -1100,10 +1102,32 @@
             const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(JSON.stringify(financeData));
             const a = document.createElement('a'); a.href = dataUri; a.download = `FinPro_${new Date().toISOString().slice(0,10)}.json`; a.click();
         }
+
+        // --- 修复点：导入逻辑优化 ---
         function importData(input) {
+            if (!input.files || !input.files[0]) return; // 如果没有文件则退出
+
+            const file = input.files[0];
             const reader = new FileReader();
-            reader.onload = e => { try { financeData = JSON.parse(e.target.result); updateUI(); alert('恢复成功'); } catch(err) { alert('文件错误'); } };
-            reader.readAsText(input.files[0]);
+
+            reader.onload = function(e) {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    // 简单的格式检查，看是否有 records 数组
+                    if (!json.records) throw new Error("Invalid format");
+                    
+                    financeData = json;
+                    updateUI();
+                    alert('数据恢复成功！');
+                } catch(err) {
+                    console.error(err);
+                    alert('文件格式错误或损坏，请上传正确的备份文件。');
+                }
+                // 重要：清空input的值，这样如果用户再次选择同一个文件也能触发onchange
+                input.value = ''; 
+            };
+            
+            reader.readAsText(file);
         }
     </script>
 </body>
