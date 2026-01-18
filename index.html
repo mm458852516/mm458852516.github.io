@@ -46,11 +46,12 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
             min-height: 100vh;
-            /* 适配深色模式背景 */
+            /* 浅色背景 */
             background-color: #F2F2F7; 
             -webkit-font-smoothing: antialiased;
         }
         
+        /* 深色模式背景：纯黑 */
         @media (prefers-color-scheme: dark) {
             html, body { background-color: #000000; color: #FFFFFF; }
         }
@@ -66,6 +67,7 @@
         /* 玻璃拟态导航栏适配 */
         .glass-nav {
             position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+            /* 浅色模式：半透明白灰 */
             background: rgba(242, 242, 247, 0.85);
             padding-top: calc(env(safe-area-inset-top) + 8px); 
             padding-bottom: 12px;
@@ -74,10 +76,13 @@
             border-bottom: 1px solid rgba(0,0,0,0.05);
             transition: background 0.3s ease;
         }
+        
+        /* 深色模式：纯黑半透明 */
         @media (prefers-color-scheme: dark) {
             .glass-nav {
-                background: rgba(28, 28, 30, 0.85);
-                border-bottom: 1px solid rgba(255,255,255,0.05);
+                /* 修改此处：使用纯黑底色，保留模糊效果 */
+                background: rgba(0, 0, 0, 0.85);
+                border-bottom: 1px solid rgba(255,255,255,0.08); /* 微微发亮的分割线 */
             }
         }
 
@@ -100,6 +105,7 @@
             transition: transform 0.4s var(--ios-curve), background-color 0.2s ease, opacity 0.2s ease;
             will-change: transform;
         }
+        /* 深色模式：卡片使用深灰色 (#1C1C1E) 以区别于纯黑背景 */
         @media (prefers-color-scheme: dark) {
             .ios-card-static, .ios-card, .ios-clickable {
                 background: #1C1C1E;
