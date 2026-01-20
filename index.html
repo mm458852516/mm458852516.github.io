@@ -5,23 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>我的财务报表 Pro - 年度升级版</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'media', // 自动跟随系统
-            theme: {
-                extend: {
-                    colors: {
-                        ios: {
-                            bg: { light: '#F2F2F7', dark: '#000000' },
-                            card: { light: '#FFFFFF', dark: '#1C1C1E' },
-                            input: { light: '#F3F4F6', dark: '#2C2C2E' },
-                            border: { light: '#E5E7EB', dark: '#2C2C2E' }
-                        }
-                    }
-                }
-            }
-        }
-    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -46,16 +29,9 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
             min-height: 100vh;
-            /* 浅色背景 */
             background-color: #F2F2F7; 
             -webkit-font-smoothing: antialiased;
         }
-        
-        /* 深色模式背景：纯黑 */
-        @media (prefers-color-scheme: dark) {
-            html, body { background-color: #000000; color: #FFFFFF; }
-        }
-
         ::-webkit-scrollbar { display: none; width: 0; height: 0; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -64,27 +40,12 @@
             padding-bottom: env(safe-area-inset-bottom);
         }
         
-        /* 玻璃拟态导航栏适配 */
         .glass-nav {
             position: fixed; top: 0; left: 0; right: 0; z-index: 50;
-            /* 浅色模式：半透明白灰 */
-            background: rgba(242, 242, 247, 0.85);
+            background: #F2F2F7;
             padding-top: calc(env(safe-area-inset-top) + 8px); 
             padding-bottom: 12px;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(0,0,0,0.05);
             transition: background 0.3s ease;
-        }
-        
-        /* 深色模式：修改此处，移除模糊，使用纯黑背景 */
-        @media (prefers-color-scheme: dark) {
-            .glass-nav {
-                background: #000000; /* 纯黑不透明 */
-                backdrop-filter: none; /* 移除高斯模糊 */
-                -webkit-backdrop-filter: none;
-                border-bottom: 1px solid rgba(255,255,255,0.15); /* 稍微明显的分割线 */
-            }
         }
 
         .date-trigger-wrapper { position: relative; display: inline-block; }
@@ -93,27 +54,13 @@
             opacity: 0; z-index: 10; cursor: pointer;
         }
 
-        /* 卡片适配 */
-        .ios-card-static { 
-            background: #FFFFFF; 
-            border-radius: 16px; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
-        }
+        .ios-card-static { background: #FFFFFF; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .ios-card, .ios-clickable {
-            background: #FFFFFF; 
-            border-radius: 16px; 
+            background: #FFFFFF; border-radius: 16px; 
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
             transition: transform 0.4s var(--ios-curve), background-color 0.2s ease, opacity 0.2s ease;
             will-change: transform;
         }
-        /* 深色模式：卡片使用深灰色 (#1C1C1E) 以区别于纯黑背景 */
-        @media (prefers-color-scheme: dark) {
-            .ios-card-static, .ios-card, .ios-clickable {
-                background: #1C1C1E;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            }
-        }
-
         .ios-card:active, .ios-clickable:active { 
             transform: scale(0.96); 
             opacity: 0.9;
@@ -121,30 +68,21 @@
 
         #main-content { padding-top: calc(env(safe-area-inset-top) + 90px); }
         
-        /* 弹窗遮罩 */
         .modal-overlay { 
-            transition: opacity 0.4s var(--ios-curve); 
+            transition: opacity 0.35s var(--ios-curve); 
             opacity: 0;
             background: rgba(0,0,0,0.3);
+            /* 优化：默认开启backdrop-filter，但在年报的style中会覆盖掉 */
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
+            will-change: opacity;
         }
-        
-        /* 性能优化：年报弹窗本身不透明，禁用背景模糊以解决关闭时的卡顿 */
-        #modal-annual .modal-overlay {
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            .modal-overlay { background: rgba(0,0,0,0.6); }
-        }
-
         .modal-enter .modal-overlay { opacity: 1; }
         
         .modal-content {
             transform: translateY(100%);
             transition: transform 0.5s var(--ios-spring);
+            will-change: transform;
         }
         .modal-enter .modal-content { transform: translateY(0); }
         
@@ -157,12 +95,7 @@
             opacity: 0; 
         }
 
-        /* 进度条背景适配 */
         .sub-progress-bg { background-color: #E5E5EA; border-radius: 4px; height: 6px; overflow: hidden; }
-        @media (prefers-color-scheme: dark) {
-            .sub-progress-bg { background-color: #3A3A3C; }
-        }
-
         .sub-progress-fill { 
             height: 100%; border-radius: 4px; 
             width: 0%; 
@@ -170,10 +103,6 @@
         }
         
         .rank-bar-bg { background-color: #f3f4f6; height: 4px; border-radius: 2px; width: 100%; overflow: hidden; margin-top: 4px; }
-        @media (prefers-color-scheme: dark) {
-            .rank-bar-bg { background-color: #2C2C2E; }
-        }
-
         .rank-bar-fill { height: 100%; border-radius: 2px; width: 0%; transition: width 0.8s ease-out; }
 
         .btn-ios { transition: transform 0.2s, background-color 0.2s; }
@@ -192,28 +121,23 @@
             border-radius: 999px;
             padding: 4px;
             border: 1px solid rgba(0,0,0,0.05);
-        }
-        @media (prefers-color-scheme: dark) {
-            .floating-year-selector {
-                background: rgba(44, 44, 46, 0.9);
-                border: 1px solid rgba(255,255,255,0.1);
-            }
+            transition: opacity 0.3s ease;
         }
     </style>
 </head>
-<body class="antialiased bg-[#F2F2F7] dark:bg-black text-[#1C1C1E] dark:text-white transition-colors duration-300">
+<body class="antialiased">
 
     <!-- 顶部导航栏 -->
     <div class="glass-nav">
         <div class="px-5 flex justify-between items-center">
             <div class="date-trigger-wrapper btn-ios active:opacity-70">
                 <div class="flex items-center gap-2 py-1">
-                    <h1 class="text-3xl font-bold tracking-tight text-black dark:text-white leading-none" id="current-date">...</h1>
+                    <h1 class="text-3xl font-bold tracking-tight text-black leading-none" id="current-date">...</h1>
                 </div>
                 <input type="month" class="native-date-input" onchange="handleDateChange(this)">
             </div>
             
-            <button onclick="openAnnualReport()" class="h-9 px-4 bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full flex items-center gap-1.5 text-xs font-bold active:bg-blue-500/20 active:scale-95 transition-all">
+            <button onclick="openAnnualReport()" class="h-9 px-4 bg-blue-500/10 text-blue-600 rounded-full flex items-center gap-1.5 text-xs font-bold active:bg-blue-500/20 active:scale-95 transition-all">
                 <i class="fas fa-chart-pie"></i> 年报
             </button>
         </div>
@@ -224,16 +148,15 @@
         
         <!-- 本月结余卡片 -->
         <section>
-            <div class="ios-card p-5 flex justify-between items-center relative overflow-hidden active:scale-[0.98] transition-transform duration-300 dark:bg-[#1C1C1E]">
+            <div class="ios-card p-5 flex justify-between items-center relative overflow-hidden active:scale-[0.98] transition-transform duration-300">
                 <div class="z-10">
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">本月结余 (Cash Flow)</p>
-                    <p class="text-4xl font-bold text-black dark:text-white tracking-tight" id="cash-flow-display">¥0.00</p>
+                    <p class="text-sm font-medium text-gray-500 mb-1">本月结余 (Cash Flow)</p>
+                    <p class="text-4xl font-bold text-black tracking-tight" id="cash-flow-display">¥0.00</p>
                 </div>
-                <div class="relative bg-blue-50 dark:bg-blue-500/20 h-12 w-12 rounded-full flex items-center justify-center text-blue-500 dark:text-blue-400 shadow-sm z-20">
+                <div class="relative bg-blue-50 h-12 w-12 rounded-full flex items-center justify-center text-blue-500 shadow-sm z-20">
                     <i class="far fa-calendar-alt text-lg"></i>
                     <input type="month" class="native-date-input rounded-full" onchange="handleDateChange(this)">
                 </div>
-                <!-- 装饰光晕 -->
                 <div class="absolute -right-6 -bottom-6 h-32 w-32 bg-blue-400/20 opacity-50 rounded-full blur-2xl pointer-events-none"></div>
             </div>
         </section>
@@ -241,25 +164,25 @@
         <!-- 收支分析 -->
         <section>
             <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-4 mb-2">收支分析</h2>
-            <div class="ios-card-static p-0 overflow-hidden dark:bg-[#1C1C1E]">
-                <div class="grid grid-cols-2 divide-x divide-gray-100 dark:divide-gray-800 border-b border-gray-100/50 dark:border-gray-800">
-                    <div class="p-4 active:bg-gray-50 dark:active:bg-[#2C2C2E] transition-colors cursor-pointer" onclick="showHistory('income')">
+            <div class="ios-card-static p-0 overflow-hidden">
+                <div class="grid grid-cols-2 divide-x divide-gray-100 border-b border-gray-100/50">
+                    <div class="p-4 active:bg-gray-50 transition-colors cursor-pointer" onclick="showHistory('income')">
                         <div class="flex items-center gap-1 mb-2">
                             <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
-                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">总收入</span>
+                            <span class="text-xs font-medium text-gray-500">总收入</span>
                         </div>
-                        <p class="text-xl font-bold text-black dark:text-white" id="total-income">¥0</p>
+                        <p class="text-xl font-bold text-black" id="total-income">¥0</p>
                     </div>
-                    <div class="p-4 active:bg-gray-50 dark:active:bg-[#2C2C2E] transition-colors cursor-pointer" onclick="showHistory('expense')">
+                    <div class="p-4 active:bg-gray-50 transition-colors cursor-pointer" onclick="showHistory('expense')">
                         <div class="flex items-center gap-1 mb-2">
                             <div class="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div>
-                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">总支出</span>
+                            <span class="text-xs font-medium text-gray-500">总支出</span>
                         </div>
-                        <p class="text-xl font-bold text-black dark:text-white" id="total-expense">¥0</p>
+                        <p class="text-xl font-bold text-black" id="total-expense">¥0</p>
                     </div>
                 </div>
 
-                <div class="p-6 flex flex-col items-center justify-center relative border-b border-gray-100/50 dark:border-gray-800">
+                <div class="p-6 flex flex-col items-center justify-center relative border-b border-gray-100/50">
                     <div class="h-48 w-full relative z-10">
                         <canvas id="expenseChart"></canvas>
                     </div>
@@ -270,7 +193,7 @@
 
                 <div id="expense-legend" class="p-4 space-y-4"></div>
 
-                <div class="p-4 border-t border-gray-100/50 dark:border-gray-800">
+                <div class="p-4 border-t border-gray-100/50">
                     <button onclick="openModal('transaction')" class="w-full bg-[#007AFF] active:bg-[#0063CC] text-white py-3.5 rounded-xl font-semibold text-[17px] shadow-lg shadow-blue-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
                         <i class="fas fa-plus text-sm"></i> <span id="add-btn-text">记一笔</span>
                     </button>
@@ -281,74 +204,74 @@
         <!-- 资产管理 -->
         <section>
             <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-4 mb-2">资产管理</h2>
-            <div class="ios-card-static overflow-hidden dark:bg-[#1C1C1E]">
+            <div class="ios-card-static overflow-hidden">
                 
-                <div onclick="showHistory('asset')" class="p-4 border-b border-gray-100 dark:border-gray-800 active:bg-gray-50 dark:active:bg-[#2C2C2E] transition-colors cursor-pointer">
+                <div onclick="showHistory('asset')" class="p-4 border-b border-gray-100 active:bg-gray-50 transition-colors cursor-pointer">
                     <div class="flex items-center justify-between mb-2">
                         <div class="flex items-center gap-2">
-                            <div class="bg-blue-100/80 dark:bg-blue-900/40 p-1.5 rounded text-blue-600 dark:text-blue-400 text-xs"><i class="fas fa-wallet"></i></div>
-                            <span class="text-sm font-bold text-gray-900 dark:text-white">总资产</span>
+                            <div class="bg-blue-100/80 p-1.5 rounded text-blue-600 text-xs"><i class="fas fa-wallet"></i></div>
+                            <span class="text-sm font-bold text-gray-900">总资产</span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="text-lg font-bold text-black dark:text-white" id="total-assets">¥0</span>
-                            <i class="fas fa-chevron-right text-gray-300 dark:text-gray-600 text-xs"></i>
+                            <span class="text-lg font-bold text-black" id="total-assets">¥0</span>
+                            <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
                         </div>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-4 mt-3">
                         <div>
-                            <div class="flex justify-between text-[10px] text-gray-500 dark:text-gray-400 mb-1">
+                            <div class="flex justify-between text-[10px] text-gray-500 mb-1">
                                 <span>流动 (现金)</span>
                                 <span id="val-asset-current">¥0</span>
                             </div>
-                            <div class="sub-progress-bg"><div id="bar-asset-current" class="sub-progress-fill bg-blue-400 dark:bg-blue-500" style="width:0%"></div></div>
+                            <div class="sub-progress-bg"><div id="bar-asset-current" class="sub-progress-fill bg-blue-400" style="width:0%"></div></div>
                         </div>
                         <div>
-                            <div class="flex justify-between text-[10px] text-gray-500 dark:text-gray-400 mb-1">
+                            <div class="flex justify-between text-[10px] text-gray-500 mb-1">
                                 <span>非流动 (房/车)</span>
                                 <span id="val-asset-fixed">¥0</span>
                             </div>
-                            <div class="sub-progress-bg"><div id="bar-asset-fixed" class="sub-progress-fill bg-blue-800 dark:bg-blue-700" style="width:0%"></div></div>
+                            <div class="sub-progress-bg"><div id="bar-asset-fixed" class="sub-progress-fill bg-blue-800" style="width:0%"></div></div>
                         </div>
                     </div>
                 </div>
 
-                <div onclick="showHistory('liability')" class="p-4 border-b border-gray-100 dark:border-gray-800 active:bg-gray-50 dark:active:bg-[#2C2C2E] transition-colors cursor-pointer">
+                <div onclick="showHistory('liability')" class="p-4 border-b border-gray-100 active:bg-gray-50 transition-colors cursor-pointer">
                     <div class="flex items-center justify-between mb-2">
                         <div class="flex items-center gap-2">
-                            <div class="bg-red-100/80 dark:bg-red-900/40 p-1.5 rounded text-red-500 dark:text-red-400 text-xs"><i class="fas fa-credit-card"></i></div>
-                            <span class="text-sm font-bold text-gray-900 dark:text-white">总负债</span>
+                            <div class="bg-red-100/80 p-1.5 rounded text-red-500 text-xs"><i class="fas fa-credit-card"></i></div>
+                            <span class="text-sm font-bold text-gray-900">总负债</span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="text-lg font-bold text-black dark:text-white" id="total-liabilities">¥0</span>
-                            <i class="fas fa-chevron-right text-gray-300 dark:text-gray-600 text-xs"></i>
+                            <span class="text-lg font-bold text-black" id="total-liabilities">¥0</span>
+                            <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4 mt-3">
                         <div>
-                            <div class="flex justify-between text-[10px] text-gray-500 dark:text-gray-400 mb-1">
+                            <div class="flex justify-between text-[10px] text-gray-500 mb-1">
                                 <span>短期 (信用卡)</span>
                                 <span id="val-debt-short">¥0</span>
                             </div>
-                            <div class="sub-progress-bg"><div id="bar-debt-short" class="sub-progress-fill bg-red-400 dark:bg-red-500" style="width:0%"></div></div>
+                            <div class="sub-progress-bg"><div id="bar-debt-short" class="sub-progress-fill bg-red-400" style="width:0%"></div></div>
                         </div>
                         <div>
-                            <div class="flex justify-between text-[10px] text-gray-500 dark:text-gray-400 mb-1">
+                            <div class="flex justify-between text-[10px] text-gray-500 mb-1">
                                 <span>长期 (房贷)</span>
                                 <span id="val-debt-long">¥0</span>
                             </div>
-                            <div class="sub-progress-bg"><div id="bar-debt-long" class="sub-progress-fill bg-red-800 dark:bg-red-700" style="width:0%"></div></div>
+                            <div class="sub-progress-bg"><div id="bar-debt-long" class="sub-progress-fill bg-red-800" style="width:0%"></div></div>
                         </div>
                     </div>
                 </div>
 
-                <div class="p-4 bg-gray-50/50 dark:bg-[#2C2C2E]/50 flex justify-between items-center">
-                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">净资产 (Net Worth)</span>
-                    <span class="text-xl font-bold text-gray-900 dark:text-white" id="net-worth">¥0</span>
+                <div class="p-4 bg-gray-50/50 flex justify-between items-center">
+                    <span class="text-sm font-medium text-gray-500">净资产 (Net Worth)</span>
+                    <span class="text-xl font-bold text-gray-900" id="net-worth">¥0</span>
                 </div>
 
-                <button onclick="openModal('asset_input')" class="w-full py-3 text-center text-[#007AFF] font-medium text-[15px] active:bg-gray-100 dark:active:bg-[#2C2C2E] transition-colors border-t border-gray-100 dark:border-gray-800">
+                <button onclick="openModal('asset_input')" class="w-full py-3 text-center text-[#007AFF] font-medium text-[15px] active:bg-gray-100 transition-colors border-t border-gray-100">
                     添加资产或负债项目
                 </button>
             </div>
@@ -357,11 +280,11 @@
         <!-- 底部功能 -->
         <section>
             <div class="grid grid-cols-2 gap-4">
-                <button onclick="exportData()" class="ios-card dark:bg-[#1C1C1E] p-4 flex flex-col items-center justify-center gap-2 text-gray-600 dark:text-gray-400 active:scale-95 transition-transform">
+                <button onclick="exportData()" class="ios-card p-4 flex flex-col items-center justify-center gap-2 text-gray-600 active:scale-95 transition-transform">
                     <i class="fas fa-cloud-download-alt text-2xl text-blue-500"></i>
                     <span class="text-xs font-medium">备份数据</span>
                 </button>
-                <button onclick="document.getElementById('importFile').click()" class="ios-card dark:bg-[#1C1C1E] p-4 flex flex-col items-center justify-center gap-2 text-gray-600 dark:text-gray-400 active:scale-95 transition-transform">
+                <button onclick="document.getElementById('importFile').click()" class="ios-card p-4 flex flex-col items-center justify-center gap-2 text-gray-600 active:scale-95 transition-transform">
                     <i class="fas fa-cloud-upload-alt text-2xl text-green-500"></i>
                     <span class="text-xs font-medium">恢复数据</span>
                 </button>
@@ -374,13 +297,13 @@
     <!-- 弹窗：历史记录 -->
     <div id="modal-history" class="fixed inset-0 z-[60] hidden">
         <div class="absolute inset-0 modal-overlay" onclick="closeModal('history')"></div>
-        <div class="absolute bottom-0 w-full bg-[#F2F2F7] dark:bg-black rounded-t-[28px] h-[85vh] flex flex-col modal-content shadow-2xl dark:shadow-gray-900">
+        <div class="absolute bottom-0 w-full bg-[#F2F2F7] rounded-t-[28px] h-[85vh] flex flex-col modal-content shadow-2xl">
             <div class="w-full flex justify-center pt-3 pb-1" onclick="closeModal('history')">
-                <div class="w-12 h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full opacity-50"></div>
+                <div class="w-12 h-1.5 bg-gray-300 rounded-full opacity-50"></div>
             </div>
-            <div class="px-5 py-3 flex justify-between items-center border-b border-gray-200/50 dark:border-gray-800 sticky top-0 z-10 bg-[#F2F2F7]/80 dark:bg-black/80 backdrop-blur-md rounded-t-[28px]">
-                <h3 class="text-[22px] font-bold text-black dark:text-white" id="history-title">记录</h3>
-                <button onclick="closeModal('history')" class="bg-gray-200/80 dark:bg-[#3A3A3C] h-8 w-8 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-300 font-bold active:scale-90 transition-transform"><i class="fas fa-times"></i></button>
+            <div class="px-5 py-3 flex justify-between items-center border-b border-gray-200/50 sticky top-0 z-10 bg-[#F2F2F7]/80 backdrop-blur-md rounded-t-[28px]">
+                <h3 class="text-[22px] font-bold text-black" id="history-title">记录</h3>
+                <button onclick="closeModal('history')" class="bg-gray-200/80 h-8 w-8 rounded-full flex items-center justify-center text-gray-500 font-bold active:scale-90 transition-transform"><i class="fas fa-times"></i></button>
             </div>
             <div id="history-list" class="flex-1 overflow-y-auto p-4 space-y-3" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
                 <!-- List Items go here -->
@@ -391,15 +314,15 @@
     <!-- 弹窗：记账 -->
     <div id="modal-transaction" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 modal-overlay" onclick="closeModal('transaction')"></div>
-        <div class="absolute bottom-0 w-full bg-white dark:bg-[#1C1C1E] rounded-t-[28px] p-6 pb-6 modal-content shadow-2xl" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
+        <div class="absolute bottom-0 w-full bg-white rounded-t-[28px] p-6 pb-6 modal-content shadow-2xl" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
             <div class="w-full flex justify-center -mt-2 mb-6">
-                <div class="w-12 h-1.5 bg-gray-200 dark:bg-gray-600 rounded-full opacity-50"></div>
+                <div class="w-12 h-1.5 bg-gray-200 rounded-full opacity-50"></div>
             </div>
             
             <div class="space-y-6">
-                <div class="flex bg-gray-100 dark:bg-[#2C2C2E] p-1 rounded-xl">
-                    <button onclick="setTransType('expense')" id="btn-expense" class="flex-1 py-2 rounded-lg text-[15px] font-medium shadow-sm bg-white dark:bg-[#636366] text-black dark:text-white transition-all duration-300">支出</button>
-                    <button onclick="setTransType('income')" id="btn-income" class="flex-1 py-2 rounded-lg text-[15px] font-medium text-gray-500 dark:text-gray-400 transition-all duration-300">收入</button>
+                <div class="flex bg-gray-100 p-1 rounded-xl">
+                    <button onclick="setTransType('expense')" id="btn-expense" class="flex-1 py-2 rounded-lg text-[15px] font-medium shadow-sm bg-white text-black transition-all duration-300">支出</button>
+                    <button onclick="setTransType('income')" id="btn-income" class="flex-1 py-2 rounded-lg text-[15px] font-medium text-gray-500 transition-all duration-300">收入</button>
                 </div>
 
                 <div id="expense-type-selector">
@@ -407,13 +330,13 @@
                     <div class="flex gap-3">
                         <label class="flex-1 cursor-pointer group">
                             <input type="radio" name="expense_nature" value="variable" checked class="hidden peer" onchange="updateCategoryOptions('expense')">
-                            <div class="py-2.5 text-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 peer-checked:border-red-500 peer-checked:bg-red-50 dark:peer-checked:bg-red-900/20 peer-checked:text-red-600 dark:peer-checked:text-red-400 transition-all font-medium text-sm group-active:scale-[0.98]">
+                            <div class="py-2.5 text-center rounded-lg border border-gray-200 text-gray-500 peer-checked:border-red-500 peer-checked:bg-red-50 peer-checked:text-red-600 transition-all font-medium text-sm group-active:scale-[0.98]">
                                 即时/非固定
                             </div>
                         </label>
                         <label class="flex-1 cursor-pointer group">
                             <input type="radio" name="expense_nature" value="fixed" class="hidden peer" onchange="updateCategoryOptions('expense')">
-                            <div class="py-2.5 text-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 peer-checked:border-red-500 peer-checked:bg-red-50 dark:peer-checked:bg-red-900/20 peer-checked:text-red-600 dark:peer-checked:text-red-400 transition-all font-medium text-sm group-active:scale-[0.98]">
+                            <div class="py-2.5 text-center rounded-lg border border-gray-200 text-gray-500 peer-checked:border-red-500 peer-checked:bg-red-50 peer-checked:text-red-600 transition-all font-medium text-sm group-active:scale-[0.98]">
                                 固定支出 (房租等)
                             </div>
                         </label>
@@ -423,20 +346,20 @@
                 <div>
                     <label class="text-xs text-gray-400 font-medium ml-1">金额</label>
                     <div class="relative mt-1">
-                        <span class="absolute left-0 top-1/2 -translate-y-1/2 text-2xl font-bold text-black dark:text-white">¥</span>
-                        <input type="number" id="t-amount" class="w-full bg-transparent pl-6 text-4xl font-bold border-b border-gray-100 dark:border-gray-700 py-2 outline-none text-black dark:text-white placeholder-gray-200 dark:placeholder-gray-600 transition-colors focus:border-blue-500" placeholder="0.00">
+                        <span class="absolute left-0 top-1/2 -translate-y-1/2 text-2xl font-bold text-black">¥</span>
+                        <input type="number" id="t-amount" class="w-full pl-6 text-4xl font-bold border-b border-gray-100 py-2 outline-none text-black placeholder-gray-200 transition-colors focus:border-blue-500" placeholder="0.00">
                     </div>
                 </div>
 
                 <div>
                      <label class="text-xs text-gray-400 font-medium ml-1">分类</label>
                     <div class="grid grid-cols-3 gap-3 mt-2">
-                        <select id="t-category" class="col-span-3 bg-gray-50 dark:bg-[#2C2C2E] text-lg rounded-xl px-4 py-3 outline-none appearance-none border border-gray-100 dark:border-gray-700 text-gray-700 dark:text-white font-medium focus:bg-white dark:focus:bg-[#3A3A3C] focus:border-blue-300 transition-all">
+                        <select id="t-category" class="col-span-3 bg-gray-50 text-lg rounded-xl px-4 py-3 outline-none appearance-none border border-gray-100 text-gray-700 font-medium focus:bg-white focus:border-blue-300 transition-all">
                         </select>
                     </div>
                 </div>
                 
-                <button onclick="saveRecord('transaction')" class="w-full bg-black dark:bg-white text-white dark:text-black py-4 rounded-2xl font-bold text-lg active:scale-[0.96] transition-transform shadow-lg shadow-black/10">保存记录</button>
+                <button onclick="saveRecord('transaction')" class="w-full bg-black text-white py-4 rounded-2xl font-bold text-lg active:scale-[0.96] transition-transform shadow-lg shadow-black/10">保存记录</button>
             </div>
         </div>
     </div>
@@ -444,18 +367,18 @@
     <!-- 弹窗：资产录入 (含修改模式) -->
     <div id="modal-asset_input" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 modal-overlay" onclick="closeModal('asset_input')"></div>
-        <div class="absolute bottom-0 w-full bg-white dark:bg-[#1C1C1E] rounded-t-[28px] p-6 pb-6 modal-content shadow-2xl" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
+        <div class="absolute bottom-0 w-full bg-white rounded-t-[28px] p-6 pb-6 modal-content shadow-2xl" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
             <div class="w-full flex justify-center -mt-2 mb-6">
-                <div class="w-12 h-1.5 bg-gray-200 dark:bg-gray-600 rounded-full opacity-50"></div>
+                <div class="w-12 h-1.5 bg-gray-200 rounded-full opacity-50"></div>
             </div>
             
             <div class="space-y-5">
-                <h3 class="text-xl font-bold text-center text-black dark:text-white" id="asset-modal-title">资产/负债录入</h3>
+                <h3 class="text-xl font-bold text-center" id="asset-modal-title">资产/负债录入</h3>
                 
                 <!-- 类型切换 (修改模式下禁用) -->
-                <div class="flex bg-gray-100 dark:bg-[#2C2C2E] p-1 rounded-xl" id="asset-type-switch">
-                    <button onclick="setAssetType('asset')" id="btn-asset" class="flex-1 py-2 rounded-lg text-[15px] font-medium shadow-sm bg-white dark:bg-[#636366] text-black dark:text-white transition-all">资产</button>
-                    <button onclick="setAssetType('liability')" id="btn-liability" class="flex-1 py-2 rounded-lg text-[15px] font-medium text-gray-500 dark:text-gray-400 transition-all">负债</button>
+                <div class="flex bg-gray-100 p-1 rounded-xl" id="asset-type-switch">
+                    <button onclick="setAssetType('asset')" id="btn-asset" class="flex-1 py-2 rounded-lg text-[15px] font-medium shadow-sm bg-white text-black transition-all">资产</button>
+                    <button onclick="setAssetType('liability')" id="btn-liability" class="flex-1 py-2 rounded-lg text-[15px] font-medium text-gray-500 transition-all">负债</button>
                 </div>
 
                 <div>
@@ -463,26 +386,26 @@
                     <div class="flex gap-3">
                         <label class="flex-1 cursor-pointer group">
                             <input type="radio" name="asset_subtype" value="type1" checked class="hidden peer">
-                            <div class="py-2.5 text-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 peer-checked:text-blue-600 dark:peer-checked:text-blue-400 transition-all font-medium text-sm group-active:scale-[0.98]" id="subtype-label-1">
+                            <div class="py-2.5 text-center rounded-lg border border-gray-200 text-gray-500 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-600 transition-all font-medium text-sm group-active:scale-[0.98]" id="subtype-label-1">
                                 流动资产
                             </div>
                         </label>
                         <label class="flex-1 cursor-pointer group">
                             <input type="radio" name="asset_subtype" value="type2" class="hidden peer">
-                            <div class="py-2.5 text-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 peer-checked:text-blue-600 dark:peer-checked:text-blue-400 transition-all font-medium text-sm group-active:scale-[0.98]" id="subtype-label-2">
+                            <div class="py-2.5 text-center rounded-lg border border-gray-200 text-gray-500 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-600 transition-all font-medium text-sm group-active:scale-[0.98]" id="subtype-label-2">
                                 非流动资产
                             </div>
                         </label>
                     </div>
                 </div>
 
-                <div class="bg-gray-50 dark:bg-[#2C2C2E] rounded-xl p-4 border border-gray-100 dark:border-gray-700 focus-within:bg-white dark:focus-within:bg-[#3A3A3C] focus-within:border-blue-200 transition-colors">
-                    <input type="text" id="a-name" class="w-full bg-transparent outline-none text-lg font-medium text-black dark:text-white placeholder-gray-400" placeholder="项目名称 (如: 招行卡/房贷)">
+                <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 focus-within:bg-white focus-within:border-blue-200 transition-colors">
+                    <input type="text" id="a-name" class="w-full bg-transparent outline-none text-lg font-medium placeholder-gray-400" placeholder="项目名称 (如: 招行卡/房贷)">
                 </div>
 
-                <div class="bg-gray-50 dark:bg-[#2C2C2E] rounded-xl p-4 border border-gray-100 dark:border-gray-700 flex items-center focus-within:bg-white dark:focus-within:bg-[#3A3A3C] focus-within:border-blue-200 transition-colors">
+                <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 flex items-center focus-within:bg-white focus-within:border-blue-200 transition-colors">
                     <span class="text-xl font-bold text-gray-400 mr-2">¥</span>
-                    <input type="number" id="a-amount" class="w-full bg-transparent outline-none text-2xl font-bold text-black dark:text-white placeholder-gray-300 dark:placeholder-gray-600" placeholder="0.00">
+                    <input type="number" id="a-amount" class="w-full bg-transparent outline-none text-2xl font-bold text-black placeholder-gray-300" placeholder="0.00">
                 </div>
 
                 <button onclick="saveRecord('asset')" class="w-full bg-[#007AFF] text-white py-4 rounded-2xl font-bold text-lg active:scale-[0.96] transition-transform shadow-lg shadow-blue-500/20" id="btn-save-asset">确认保存</button>
@@ -491,16 +414,16 @@
     </div>
 
     <!-- 弹窗：年度报告 -->
+    <!-- 优化：在style中显式覆盖 backdrop-filter: none，避免 Safari 在全白背景下进行昂贵的模糊计算 -->
     <div id="modal-annual" class="fixed inset-0 z-[60] hidden">
-        <div class="absolute inset-0 bg-white dark:bg-black modal-overlay overflow-y-auto opacity-100">
+        <div class="absolute inset-0 bg-white modal-overlay overflow-y-auto opacity-100" style="backdrop-filter: none; -webkit-backdrop-filter: none;">
             <div class="p-5" style="padding-bottom: calc(env(safe-area-inset-bottom) + 100px);">
                 <!-- Header -->
-                <div class="flex justify-between items-center mb-6 pt-2 sticky top-0 bg-white/90 dark:bg-black/90 backdrop-blur z-10 py-2">
-                    <!-- 修改关闭按钮调用方法 -->
-                    <button onclick="closeAnnualReport()" class="h-8 w-8 rounded-full bg-gray-100 dark:bg-[#2C2C2E] flex items-center justify-center text-gray-600 dark:text-gray-300 active:scale-90 transition-transform">
+                <div class="flex justify-between items-center mb-6 pt-2 sticky top-0 bg-white/90 backdrop-blur z-10 py-2">
+                    <button onclick="closeModal('annual')" class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 active:scale-90 transition-transform">
                         <i class="fas fa-arrow-left"></i>
                     </button>
-                    <h2 class="text-lg font-bold text-black dark:text-white">年度财务报告</h2>
+                    <h2 class="text-lg font-bold">年度财务报告</h2>
                     <div class="w-8"></div>
                 </div>
 
@@ -508,26 +431,26 @@
                 <div class="animate-fade-in-up" style="animation-delay: 0.1s;">
                     <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">资产变动 (年初 vs 年末)</h3>
                     <div class="grid grid-cols-2 gap-3 mb-6">
-                        <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-900/50">
-                            <p class="text-xs font-bold text-blue-600 dark:text-blue-400 mb-2 flex items-center gap-1"><i class="fas fa-wallet"></i> 总资产</p>
-                            <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-1">
+                        <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100">
+                            <p class="text-xs font-bold text-blue-600 mb-2 flex items-center gap-1"><i class="fas fa-wallet"></i> 总资产</p>
+                            <div class="flex justify-between text-sm text-gray-600 mb-1">
                                 <span>年初</span>
-                                <span class="font-bold text-black dark:text-white" id="annual-asset-start">¥0</span>
+                                <span class="font-bold text-black" id="annual-asset-start">¥0</span>
                             </div>
-                            <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                            <div class="flex justify-between text-sm text-gray-600">
                                 <span>年末</span>
-                                <span class="font-bold text-black dark:text-white" id="annual-asset-end">¥0</span>
+                                <span class="font-bold text-black" id="annual-asset-end">¥0</span>
                             </div>
                         </div>
-                        <div class="bg-red-50 dark:bg-red-900/20 p-4 rounded-2xl border border-red-100 dark:border-red-900/50">
-                            <p class="text-xs font-bold text-red-600 dark:text-red-400 mb-2 flex items-center gap-1"><i class="fas fa-credit-card"></i> 总负债</p>
-                            <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-1">
+                        <div class="bg-red-50 p-4 rounded-2xl border border-red-100">
+                            <p class="text-xs font-bold text-red-600 mb-2 flex items-center gap-1"><i class="fas fa-credit-card"></i> 总负债</p>
+                            <div class="flex justify-between text-sm text-gray-600 mb-1">
                                 <span>年初</span>
-                                <span class="font-bold text-black dark:text-white" id="annual-debt-start">¥0</span>
+                                <span class="font-bold text-black" id="annual-debt-start">¥0</span>
                             </div>
-                            <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                            <div class="flex justify-between text-sm text-gray-600">
                                 <span>年末</span>
-                                <span class="font-bold text-black dark:text-white" id="annual-debt-end">¥0</span>
+                                <span class="font-bold text-black" id="annual-debt-end">¥0</span>
                             </div>
                         </div>
                     </div>
@@ -536,7 +459,7 @@
                 <!-- 资产变动情况 (明细) -->
                 <div class="animate-fade-in-up mb-6" style="animation-delay: 0.15s;">
                     <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">资产负债明细表</h3>
-                    <div class="bg-white dark:bg-[#1C1C1E] rounded-xl border border-gray-100 dark:border-gray-800 overflow-hidden" id="annual-asset-detail-list">
+                    <div class="bg-white rounded-xl border border-gray-100 overflow-hidden" id="annual-asset-detail-list">
                         <!-- JS 填充 -->
                     </div>
                 </div>
@@ -545,40 +468,40 @@
                 <div class="animate-fade-in-up" style="animation-delay: 0.2s;">
                     <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">收支概览</h3>
                     <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-2xl border border-green-100 dark:border-green-900/50">
-                            <p class="text-xs text-green-600 dark:text-green-400 mb-1">年度总收入</p>
-                            <p class="text-xl font-bold text-green-700 dark:text-green-400" id="annual-income">¥0</p>
+                        <div class="bg-green-50 p-4 rounded-2xl border border-green-100">
+                            <p class="text-xs text-green-600 mb-1">年度总收入</p>
+                            <p class="text-xl font-bold text-green-700" id="annual-income">¥0</p>
                         </div>
-                        <div class="bg-red-50 dark:bg-red-900/20 p-4 rounded-2xl border border-red-100 dark:border-red-900/50">
-                            <p class="text-xs text-red-600 dark:text-red-400 mb-1">年度总支出</p>
-                            <p class="text-xl font-bold text-red-700 dark:text-red-400" id="annual-expense">¥0</p>
+                        <div class="bg-red-50 p-4 rounded-2xl border border-red-100">
+                            <p class="text-xs text-red-600 mb-1">年度总支出</p>
+                            <p class="text-xl font-bold text-red-700" id="annual-expense">¥0</p>
                         </div>
                     </div>
                     
-                    <div class="bg-gray-100 dark:bg-[#2C2C2E] p-4 rounded-2xl mb-8 flex justify-between items-center shadow-inner">
+                    <div class="bg-gray-100 p-4 rounded-2xl mb-8 flex justify-between items-center shadow-inner">
                         <div>
-                            <p class="text-xs text-gray-600 dark:text-gray-400 mb-1">年度结余</p>
-                            <p class="text-2xl font-bold text-black dark:text-white" id="annual-balance">¥0</p>
+                            <p class="text-xs text-gray-600 mb-1">年度结余</p>
+                            <p class="text-2xl font-bold text-black" id="annual-balance">¥0</p>
                         </div>
-                        <i class="fas fa-piggy-bank text-3xl text-gray-300 dark:text-gray-600"></i>
+                        <i class="fas fa-piggy-bank text-3xl text-gray-300"></i>
                     </div>
                 </div>
 
                 <!-- 12个月趋势图 -->
                 <div class="animate-fade-in-up" style="animation-delay: 0.3s;">
                     <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 ml-1">月度收支趋势</h3>
-                    <div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-gray-100 dark:border-gray-800 p-4 mb-8 shadow-sm h-64">
+                    <div class="bg-white rounded-2xl border border-gray-100 p-4 mb-8 shadow-sm h-64">
                         <canvas id="annualChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="floating-year-selector pointer-events-auto">
+        <div class="floating-year-selector pointer-events-auto" style="backdrop-filter: none; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
             <div class="flex items-center">
-                <button onclick="changeReportYear(-1)" class="w-10 h-8 flex items-center justify-center text-gray-500 dark:text-gray-400 active:scale-90 transition-transform"><i class="fas fa-chevron-left"></i></button>
-                <span class="px-3 font-bold text-lg tabular-nums text-black dark:text-white" id="report-year-display">2026</span>
-                <button onclick="changeReportYear(1)" class="w-10 h-8 flex items-center justify-center text-gray-500 dark:text-gray-400 active:scale-90 transition-transform"><i class="fas fa-chevron-right"></i></button>
+                <button onclick="changeReportYear(-1)" class="w-10 h-8 flex items-center justify-center text-gray-500 active:scale-90 transition-transform"><i class="fas fa-chevron-left"></i></button>
+                <span class="px-3 font-bold text-lg tabular-nums" id="report-year-display">2026</span>
+                <button onclick="changeReportYear(1)" class="w-10 h-8 flex items-center justify-center text-gray-500 active:scale-90 transition-transform"><i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
     </div>
@@ -616,14 +539,6 @@
             if (savedData) financeData = JSON.parse(savedData);
             updateCategoryOptions('expense');
             updateUI();
-            
-            // 监听系统主题变化重绘图表
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-                updateUI();
-                if(!document.getElementById('modal-annual').classList.contains('hidden')){
-                    updateAnnualReport();
-                }
-            });
         };
 
         function handleDateChange(input) {
@@ -724,13 +639,7 @@
             const cashFlow = totalInc - totalExp;
             const flowEl = document.getElementById('cash-flow-display');
             flowEl.innerText = `¥${cashFlow.toFixed(2)}`;
-            
-            // Dark mode sensitive text color
-            if (cashFlow >= 0) {
-                 flowEl.className = `text-4xl font-bold tracking-tight text-black dark:text-white`;
-            } else {
-                 flowEl.className = `text-4xl font-bold tracking-tight text-red-500`;
-            }
+            flowEl.className = `text-4xl font-bold tracking-tight ${cashFlow >= 0 ? 'text-black' : 'text-red-500'}`;
 
             document.getElementById('total-assets').innerText = `¥${totals.asset.toLocaleString()}`;
             document.getElementById('total-liabilities').innerText = `¥${totals.liability.toLocaleString()}`;
@@ -817,7 +726,7 @@
             }
             records.reverse().forEach((r, index) => {
                 const div = document.createElement('div');
-                div.className = "bg-white dark:bg-[#1C1C1E] p-4 rounded-2xl flex justify-between items-center shadow-sm mb-2 list-item-anim";
+                div.className = "bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm mb-2 list-item-anim";
                 div.style.animationDelay = `${index * 0.05}s`;
                 
                 let subLabel = "";
@@ -825,17 +734,17 @@
 
                 div.innerHTML = `
                     <div class="flex items-center gap-3">
-                        <div class="h-10 w-10 rounded-full ${type==='income' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-500 dark:text-red-400'} flex items-center justify-center text-sm">
+                        <div class="h-10 w-10 rounded-full ${type==='income' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-500'} flex items-center justify-center text-sm">
                             <i class="fas ${getIcon(r.category)}"></i>
                         </div>
                         <div>
-                            <p class="font-bold text-gray-900 dark:text-white text-[15px]">${r.category} ${subLabel}</p>
+                            <p class="font-bold text-gray-900 text-[15px]">${r.category} ${subLabel}</p>
                             <p class="text-xs text-gray-400 mt-0.5">${r.date.split('T')[0]}</p>
                         </div>
                     </div>
                     <div class="text-right">
-                         <p class="font-bold text-lg ${type==='income'?'text-green-600 dark:text-green-400':'text-black dark:text-white'}">${type==='income'?'+':'-'}¥${parseFloat(r.amount).toLocaleString()}</p>
-                         <button onclick="deleteRecord('${r.id}', '${type}')" class="text-xs text-red-400 mt-1 px-2 py-1 active:bg-red-50 dark:active:bg-red-900/20 rounded transition-colors">删除</button>
+                         <p class="font-bold text-lg ${type==='income'?'text-green-600':'text-black'}">${type==='income'?'+':'-'}¥${parseFloat(r.amount).toLocaleString()}</p>
+                         <button onclick="deleteRecord('${r.id}', '${type}')" class="text-xs text-red-400 mt-1 px-2 py-1 active:bg-red-50 rounded transition-colors">删除</button>
                     </div>
                 `;
                 container.appendChild(div);
@@ -852,7 +761,7 @@
             }
             activeItems.forEach((item, index) => {
                 const div = document.createElement('div');
-                div.className = "bg-white dark:bg-[#1C1C1E] p-4 rounded-2xl flex justify-between items-center shadow-sm mb-2 list-item-anim active:scale-[0.98] transition-transform cursor-pointer";
+                div.className = "bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm mb-2 list-item-anim active:scale-[0.98] transition-transform cursor-pointer";
                 div.style.animationDelay = `${index * 0.05}s`;
                 
                 // 点击直接编辑
@@ -871,25 +780,25 @@
                 
                 // 删除按钮逻辑
                 const deleteBtn = !isInherited ? 
-                    `<button onclick="deleteRecord('${item.recordId}', '${type}'); event.stopPropagation();" class="text-xs text-red-500 mt-2 px-2 py-1 bg-red-50 dark:bg-red-900/20 rounded">撤销本月记录</button>` 
+                    `<button onclick="deleteRecord('${item.recordId}', '${type}'); event.stopPropagation();" class="text-xs text-red-500 mt-2 px-2 py-1 bg-red-50 rounded">撤销本月记录</button>` 
                     : '';
 
                 div.innerHTML = `
                     <div class="flex items-center gap-3">
-                        <div class="h-10 w-10 rounded-full ${type==='asset' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-red-100 dark:bg-red-900/30 text-red-500 dark:text-red-400'} flex items-center justify-center text-sm">
+                        <div class="h-10 w-10 rounded-full ${type==='asset' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-500'} flex items-center justify-center text-sm">
                             <i class="fas ${type==='asset' ? 'fa-wallet' : 'fa-credit-card'}"></i>
                         </div>
                         <div>
-                            <p class="font-bold text-gray-900 dark:text-white text-[15px]">${item.name}</p>
-                            <p class="text-xs text-gray-400 mt-0.5 bg-gray-100 dark:bg-[#3A3A3C] inline-block px-1.5 rounded">${subLabel}</p>
-                            ${isInherited ? '<span class="text-[10px] text-gray-400 ml-1">(继承上月)</span>' : '<span class="text-[10px] text-blue-500 dark:text-blue-400 ml-1">(本月已更新)</span>'}
+                            <p class="font-bold text-gray-900 text-[15px]">${item.name}</p>
+                            <p class="text-xs text-gray-400 mt-0.5 bg-gray-100 inline-block px-1.5 rounded">${subLabel}</p>
+                            ${isInherited ? '<span class="text-[10px] text-gray-400 ml-1">(继承上月)</span>' : '<span class="text-[10px] text-blue-500 ml-1">(本月已更新)</span>'}
                         </div>
                     </div>
                     <div class="text-right flex flex-col items-end">
-                         <p class="font-bold text-lg text-black dark:text-white">¥${item.amount.toLocaleString()}</p>
+                         <p class="font-bold text-lg text-black">¥${item.amount.toLocaleString()}</p>
                          <div class="flex gap-2">
                              ${deleteBtn}
-                             <p class="text-xs text-blue-500 dark:text-blue-400 mt-2 py-1">修改</p>
+                             <p class="text-xs text-blue-500 mt-2 py-1">修改</p>
                          </div>
                     </div>
                 `;
@@ -1044,7 +953,6 @@
                     const startVal = startSnapshot[name] ? parseFloat(startSnapshot[name].amount) : 0;
                     const endVal = endSnapshot[name] ? parseFloat(endSnapshot[name].amount) : 0;
 
-                    // --- 修复点：如果年初和年末都是0，则不显示 ---
                     if (Math.abs(startVal) < 0.01 && Math.abs(endVal) < 0.01) {
                         return; 
                     }
@@ -1052,20 +960,20 @@
                     const info = endSnapshot[name] || startSnapshot[name]; 
                     
                     const div = document.createElement('div');
-                    div.className = "flex justify-between items-center p-3 border-b border-gray-100 dark:border-gray-800 last:border-0 text-sm";
+                    div.className = "flex justify-between items-center p-3 border-b border-gray-100 last:border-0 text-sm";
                     div.innerHTML = `
                         <div>
-                            <span class="${info.type === 'asset' ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' : 'text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/30'} text-[10px] px-1 rounded mr-1">${info.type==='asset'?'资':'债'}</span>
-                            <span class="font-medium text-gray-700 dark:text-gray-300">${name}</span>
+                            <span class="${info.type === 'asset' ? 'text-blue-600 bg-blue-50' : 'text-red-500 bg-red-50'} text-[10px] px-1 rounded mr-1">${info.type==='asset'?'资':'债'}</span>
+                            <span class="font-medium text-gray-700">${name}</span>
                         </div>
                         <div class="flex gap-4 text-right">
                              <div class="flex flex-col">
                                 <span class="text-[10px] text-gray-400">年初</span>
-                                <span class="text-gray-500 dark:text-gray-500">¥${startVal.toLocaleString()}</span>
+                                <span class="text-gray-500">¥${startVal.toLocaleString()}</span>
                              </div>
                              <div class="flex flex-col">
                                 <span class="text-[10px] text-gray-400">年末</span>
-                                <span class="font-bold text-black dark:text-white">¥${endVal.toLocaleString()}</span>
+                                <span class="font-bold text-black">¥${endVal.toLocaleString()}</span>
                              </div>
                         </div>
                     `;
@@ -1087,19 +995,8 @@
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    scales: { 
-                        x: { 
-                            grid: { display: false },
-                            ticks: { color: window.matchMedia('(prefers-color-scheme: dark)').matches ? '#9CA3AF' : '#6B7280' } 
-                        }, 
-                        y: { display: false } 
-                    },
-                    plugins: { 
-                        legend: { 
-                            position: 'top', align: 'end',
-                            labels: { color: window.matchMedia('(prefers-color-scheme: dark)').matches ? '#FFF' : '#000' }
-                        } 
-                    }
+                    scales: { x: { grid: { display: false } }, y: { display: false } },
+                    plugins: { legend: { position: 'top', align: 'end' } }
                 }
             });
         }
@@ -1112,24 +1009,17 @@
             const isEmpty = Object.keys(data).length === 0;
             const displayData = isEmpty ? { "无": 1 } : data;
             
-            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
             const colorMap = {
                 '餐饮': '#FF3B30', '交通': '#007AFF', '购物': '#FF9500', '水电气': '#AF52DE', 
                 '娱乐': '#5856D6', '医疗': '#FF2D55', '其他': '#8E8E93', '房租': '#FF9F0A', 
-                '物业费': '#FFD60A', '房贷': '#AC8E68', '个人贷款': '#FF453A', '汽车贷款': '#30B0C7', 
-                '无': isDark ? '#2C2C2E' : '#F2F2F7'
+                '物业费': '#FFD60A', '房贷': '#AC8E68', '个人贷款': '#FF453A', '汽车贷款': '#30B0C7', '无': '#F2F2F7'
             };
             
             expenseChartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: Object.keys(displayData),
-                    datasets: [{ 
-                        data: Object.values(displayData), 
-                        backgroundColor: Object.keys(displayData).map(l => colorMap[l]||'#8E8E93'), 
-                        borderWidth: 0 
-                    }]
+                    datasets: [{ data: Object.values(displayData), backgroundColor: Object.keys(displayData).map(l => colorMap[l]||'#8E8E93'), borderWidth: 0 }]
                 },
                 options: { 
                     responsive: true, maintainAspectRatio: false, cutout: '75%',
@@ -1148,8 +1038,8 @@
                     div.style.animationDelay = `${index * 0.05}s`;
                     div.innerHTML = `
                         <div class="flex items-center justify-between text-sm mb-1">
-                            <div class="flex items-center gap-2"><i class="fas ${getIcon(cat)} w-5 text-center" style="color:${color}"></i><span class="font-medium text-gray-700 dark:text-gray-300">${cat}</span></div>
-                            <div class="flex items-center gap-3"><span class="text-xs font-bold text-gray-400">${percent}%</span><span class="font-bold text-gray-900 dark:text-white">¥${amount.toLocaleString()}</span></div>
+                            <div class="flex items-center gap-2"><i class="fas ${getIcon(cat)} w-5 text-center" style="color:${color}"></i><span class="font-medium text-gray-700">${cat}</span></div>
+                            <div class="flex items-center gap-3"><span class="text-xs font-bold text-gray-400">${percent}%</span><span class="font-bold text-gray-900">¥${amount.toLocaleString()}</span></div>
                         </div>
                         <div class="rank-bar-bg"><div class="rank-bar-fill" style="width: ${percent}%; background-color: ${color}"></div></div>
                     `;
@@ -1165,21 +1055,32 @@
             return map[c] || 'fa-tag';
         }
 
-        function openModal(t) { const m = document.getElementById(`modal-${t}`); m.classList.remove('hidden'); void m.offsetWidth; m.classList.add('modal-enter'); }
-        function closeModal(t) { const m = document.getElementById(`modal-${t}`); m.classList.remove('modal-enter'); setTimeout(() => m.classList.add('hidden'), 350); }
-        
-        // --- 修复点：年报关闭逻辑 ---
-        function closeAnnualReport() {
-            closeModal('annual');
-            // 在动画结束时销毁图表，释放内存并防止重绘导致的卡顿
+        function openModal(t) { 
+            const m = document.getElementById(`modal-${t}`); 
+            m.classList.remove('hidden'); 
+            // 强制重绘，触发transition
+            void m.offsetWidth; 
+            m.classList.add('modal-enter'); 
+        }
+
+        // --- 性能优化：关闭年报时的垃圾回收与DOM清理 ---
+        function closeModal(t) { 
+            const m = document.getElementById(`modal-${t}`); 
+            m.classList.remove('modal-enter'); 
+            
             setTimeout(() => {
-                if(annualChartInstance) {
-                    annualChartInstance.destroy();
-                    annualChartInstance = null;
+                m.classList.add('hidden');
+                
+                // 针对年报的特殊优化：动画结束后销毁图表和清空DOM，释放内存
+                if (t === 'annual') {
+                    if (annualChartInstance) {
+                        annualChartInstance.destroy();
+                        annualChartInstance = null;
+                    }
+                    // 清空列表，防止下次打开时会有残留或DOM过多导致的布局计算
+                    document.getElementById('annual-asset-detail-list').innerHTML = '';
                 }
-                // 清空列表，减少DOM节点
-                document.getElementById('annual-asset-detail-list').innerHTML = '';
-            }, 350);
+            }, 350); 
         }
 
         function openAnnualReport() { reportYear = new Date().getFullYear(); updateAnnualReport(); openModal('annual'); }
@@ -1187,9 +1088,8 @@
         
         function setTransType(t) {
             currentTransType = t;
-            // 适配深色模式的按钮样式
-            const a = "flex-1 py-2 rounded-lg text-[15px] font-medium shadow-sm bg-white dark:bg-[#636366] text-black dark:text-white transition-all duration-300";
-            const i = "flex-1 py-2 rounded-lg text-[15px] font-medium text-gray-500 dark:text-gray-400 transition-all duration-300";
+            const a = "flex-1 py-2 rounded-lg text-[15px] font-medium shadow-sm bg-white text-black transition-all duration-300";
+            const i = "flex-1 py-2 rounded-lg text-[15px] font-medium text-gray-500 transition-all duration-300";
             document.getElementById('btn-expense').className = t==='expense'?a:i;
             document.getElementById('btn-income').className = t==='income'?a:i;
             document.getElementById('expense-type-selector').classList.toggle('hidden', t!=='expense');
@@ -1210,8 +1110,8 @@
 
         function setAssetType(t) {
             currentAssetType = t;
-            const a = "flex-1 py-2 rounded-lg text-[15px] font-medium shadow-sm bg-white dark:bg-[#636366] text-black dark:text-white transition-all";
-            const i = "flex-1 py-2 rounded-lg text-[15px] font-medium text-gray-500 dark:text-gray-400 transition-all";
+            const a = "flex-1 py-2 rounded-lg text-[15px] font-medium shadow-sm bg-white text-black transition-all";
+            const i = "flex-1 py-2 rounded-lg text-[15px] font-medium text-gray-500 transition-all";
             document.getElementById('btn-asset').className = t==='asset'?a:i;
             document.getElementById('btn-liability').className = t==='liability'?a:i;
             document.getElementById('subtype-label-1').innerText = t==='asset' ? "流动资产 (现金)" : "短期负债 (<1年)";
@@ -1233,9 +1133,9 @@
             const a = document.createElement('a'); a.href = dataUri; a.download = `FinPro_${new Date().toISOString().slice(0,10)}.json`; a.click();
         }
 
-        // --- 修复点：导入逻辑优化 ---
+        // --- 导入逻辑 ---
         function importData(input) {
-            if (!input.files || !input.files[0]) return; // 如果没有文件则退出
+            if (!input.files || !input.files[0]) return; 
 
             const file = input.files[0];
             const reader = new FileReader();
@@ -1243,7 +1143,6 @@
             reader.onload = function(e) {
                 try {
                     const json = JSON.parse(e.target.result);
-                    // 简单的格式检查，看是否有 records 数组
                     if (!json.records) throw new Error("Invalid format");
                     
                     financeData = json;
@@ -1253,7 +1152,6 @@
                     console.error(err);
                     alert('文件格式错误或损坏，请上传正确的备份文件。');
                 }
-                // 重要：清空input的值，这样如果用户再次选择同一个文件也能触发onchange
                 input.value = ''; 
             };
             
