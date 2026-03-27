@@ -1055,12 +1055,16 @@
             // 强制重绘，触发transition
             void m.offsetWidth; 
             m.classList.add('modal-enter'); 
+            // 【新增锁】打开弹窗时，禁止底部网页滚动
+            document.body.style.overflow = 'hidden';
         }
 
         // --- 性能优化：关闭年报时的垃圾回收与DOM清理 ---
         function closeModal(t) { 
             const m = document.getElementById(`modal-${t}`); 
             m.classList.remove('modal-enter'); 
+            // 【解锁】关闭弹窗时，恢复底部网页滚动
+            document.body.style.overflow = '';
             
             setTimeout(() => {
                 m.classList.add('hidden');
@@ -1151,36 +1155,46 @@
             
             reader.readAsText(file);
         }
-            // --- 赋予年度报告下滑关闭的 iOS 手势 ---
-            const annualSheet = document.getElementById('annual-sheet');
-            const annualScrollArea = document.getElementById('annual-scroll-area');
-            let startY = 0;
-            let currentY = 0;
+        // --- 赋予年度报告下滑关闭的 iOS 手势 (Pro级丝滑优化版) ---
+        const annualSheet = document.getElementById('annual-sheet');
+        const annualScrollArea = document.getElementById('annual-scroll-area');
+        let startY = 0;
+        let currentY = 0;
+        let isDragging = false; // 新增一个标志：判断当前是否真的在拖拽卡片
 
         annualSheet.addEventListener('touchstart', (e) => {
             // 只有当内部列表滚动到最顶部时，才触发整个卡片的下拉
             if (annualScrollArea.scrollTop <= 0) {
                 startY = e.touches[0].clientY;
+                currentY = startY; // 【修复痛点1】每次触摸必须重置当前Y值，清除记忆残留！
+                isDragging = true; // 开始拖拽
             } else {
-                startY = 0;
+                isDragging = false;
             }
         }, { passive: true });
 
         annualSheet.addEventListener('touchmove', (e) => {
-            if (startY <= 0) return;
+            if (!isDragging) return; // 如果不是拖拽状态，直接退出
+            
             currentY = e.touches[0].clientY;
             const deltaY = currentY - startY;
             
-            // 手指往下滑动时，让卡片跟着手指移动（取消过渡动画以跟手）
+            // 手指往下滑动时，让卡片跟着手指移动
             if (deltaY > 0) {
-                annualSheet.style.transition = 'none';
+                // 【修复痛点2】阻止 Safari 默认的滚动行为，防止背景滑动和不跟手
+                if (e.cancelable) e.preventDefault(); 
+                
+                annualSheet.style.transition = 'none'; // 取消动画以达到完美跟手
                 annualSheet.style.transform = `translateY(${deltaY}px)`;
             }
-        }, { passive: true });
+        }, { passive: false }); // 【注意】这里必须改成 false，否则 e.preventDefault() 会失效
 
         annualSheet.addEventListener('touchend', (e) => {
-            if (startY <= 0) return;
+            if (!isDragging) return;
+            isDragging = false; // 拖拽结束
+            
             const deltaY = currentY - startY;
+            
             // 手指松开，恢复平滑过渡动画
             annualSheet.style.transition = 'transform 0.4s var(--ios-curve)';
             
@@ -1193,7 +1207,10 @@
                 // 滑动距离不够，卡片弹回原位
                 annualSheet.style.transform = '';
             }
+            
+            // 重置坐标
             startY = 0;
+            currentY = 0; 
         });
 
     </script>
