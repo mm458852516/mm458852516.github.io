@@ -1200,9 +1200,9 @@
             
             // 如果下拉距离超过 100 像素，判定为关闭意图
             if (deltaY > 100) {
+                // 【绝杀卡顿】立刻清空手指滑动时的位置记忆，让CSS原生动画接管，顺滑坠落！
+                annualSheet.style.transform = ''; 
                 closeModal('annual');
-                // 动画结束后重置位置，以便下次正常打开
-                setTimeout(() => { annualSheet.style.transform = ''; }, 400);
             } else {
                 // 滑动距离不够，卡片弹回原位
                 annualSheet.style.transform = '';
