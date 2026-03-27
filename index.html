@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>我的财务报表 Pro - 年度升级版</title>
+    <title>财务报表 Pro - 年度升级版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -81,7 +81,7 @@
         
         .modal-content {
             transform: translateY(100%);
-            transition: transform 0.5s var(--ios-spring);
+            transition: transform 0.4s var(--ios-curve);
             will-change: transform;
         }
         .modal-enter .modal-content { transform: translateY(0); }
@@ -414,24 +414,31 @@
     </div>
 
     <!-- 弹窗：年度报告 -->
-    <!-- 优化：在style中显式覆盖 backdrop-filter: none，避免 Safari 在全白背景下进行昂贵的模糊计算 -->
     <div id="modal-annual" class="fixed inset-0 z-[60] hidden">
-        <div class="absolute inset-0 bg-white modal-overlay overflow-y-auto opacity-100" style="backdrop-filter: none; -webkit-backdrop-filter: none;">
-            <div class="p-5" style="padding-bottom: calc(env(safe-area-inset-bottom) + 100px);">
-                <!-- Header -->
-                <div class="flex justify-between items-center mb-6 pt-2 sticky top-0 bg-white/90 backdrop-blur z-10 py-2">
-                    <button onclick="closeModal('annual')" class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 active:scale-90 transition-transform">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-                    <h2 class="text-lg font-bold">年度财务报告</h2>
-                    <div class="w-8"></div>
+        <div class="absolute inset-0 modal-overlay" onclick="closeModal('annual')"></div>
+        <div class="absolute bottom-0 w-full bg-[#F2F2F7] rounded-t-[28px] h-[90vh] flex flex-col modal-content shadow-2xl" id="annual-sheet">
+            <div class="w-full flex justify-center pt-3 pb-1">
+                <div class="w-12 h-1.5 bg-gray-300 rounded-full opacity-50"></div>
+            </div>
+            
+            <div class="px-5 py-3 flex justify-center items-center border-b border-gray-200/50 sticky top-0 z-10 bg-[#F2F2F7]/80 backdrop-blur-md rounded-t-[28px]">
+                <h3 class="text-[22px] font-bold text-black">年度财务报告</h3>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-5" id="annual-scroll-area" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
+                
+                <div class="flex justify-center mb-6">
+                    <div class="bg-gray-200/50 p-1 rounded-xl flex items-center shadow-inner">
+                        <button onclick="changeReportYear(-1)" class="w-10 h-8 flex items-center justify-center text-gray-500 active:scale-90 transition-transform"><i class="fas fa-chevron-left"></i></button>
+                        <span class="px-4 font-bold text-lg tabular-nums" id="report-year-display">2026</span>
+                        <button onclick="changeReportYear(1)" class="w-10 h-8 flex items-center justify-center text-gray-500 active:scale-90 transition-transform"><i class="fas fa-chevron-right"></i></button>
+                    </div>
                 </div>
 
-                <!-- 资产变动情况 (汇总) -->
                 <div class="animate-fade-in-up" style="animation-delay: 0.1s;">
                     <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">资产变动 (年初 vs 年末)</h3>
                     <div class="grid grid-cols-2 gap-3 mb-6">
-                        <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100">
+                        <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
                             <p class="text-xs font-bold text-blue-600 mb-2 flex items-center gap-1"><i class="fas fa-wallet"></i> 总资产</p>
                             <div class="flex justify-between text-sm text-gray-600 mb-1">
                                 <span>年初</span>
@@ -442,8 +449,8 @@
                                 <span class="font-bold text-black" id="annual-asset-end">¥0</span>
                             </div>
                         </div>
-                        <div class="bg-red-50 p-4 rounded-2xl border border-red-100">
-                            <p class="text-xs font-bold text-red-600 mb-2 flex items-center gap-1"><i class="fas fa-credit-card"></i> 总负债</p>
+                        <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                            <p class="text-xs font-bold text-red-500 mb-2 flex items-center gap-1"><i class="fas fa-credit-card"></i> 总负债</p>
                             <div class="flex justify-between text-sm text-gray-600 mb-1">
                                 <span>年初</span>
                                 <span class="font-bold text-black" id="annual-debt-start">¥0</span>
@@ -455,53 +462,35 @@
                         </div>
                     </div>
                 </div>
-                
-                <!-- 资产变动情况 (明细) -->
-                <div class="animate-fade-in-up mb-6" style="animation-delay: 0.15s;">
-                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">资产负债明细表</h3>
-                    <div class="bg-white rounded-xl border border-gray-100 overflow-hidden" id="annual-asset-detail-list">
-                        <!-- JS 填充 -->
-                    </div>
-                </div>
 
-                <!-- 年度总览 -->
                 <div class="animate-fade-in-up" style="animation-delay: 0.2s;">
                     <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">收支概览</h3>
                     <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div class="bg-green-50 p-4 rounded-2xl border border-green-100">
+                        <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
                             <p class="text-xs text-green-600 mb-1">年度总收入</p>
-                            <p class="text-xl font-bold text-green-700" id="annual-income">¥0</p>
+                            <p class="text-xl font-bold text-green-600" id="annual-income">¥0</p>
                         </div>
-                        <div class="bg-red-50 p-4 rounded-2xl border border-red-100">
-                            <p class="text-xs text-red-600 mb-1">年度总支出</p>
-                            <p class="text-xl font-bold text-red-700" id="annual-expense">¥0</p>
+                        <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                            <p class="text-xs text-red-500 mb-1">年度总支出</p>
+                            <p class="text-xl font-bold text-red-500" id="annual-expense">¥0</p>
                         </div>
                     </div>
                     
-                    <div class="bg-gray-100 p-4 rounded-2xl mb-8 flex justify-between items-center shadow-inner">
+                    <div class="bg-black p-5 rounded-2xl mb-8 flex justify-between items-center shadow-lg">
                         <div>
-                            <p class="text-xs text-gray-600 mb-1">年度结余</p>
-                            <p class="text-2xl font-bold text-black" id="annual-balance">¥0</p>
+                            <p class="text-xs text-gray-400 mb-1">年度结余</p>
+                            <p class="text-2xl font-bold text-white" id="annual-balance">¥0</p>
                         </div>
-                        <i class="fas fa-piggy-bank text-3xl text-gray-300"></i>
+                        <i class="fas fa-piggy-bank text-3xl text-gray-600"></i>
                     </div>
                 </div>
 
-                <!-- 12个月趋势图 -->
                 <div class="animate-fade-in-up" style="animation-delay: 0.3s;">
                     <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 ml-1">月度收支趋势</h3>
                     <div class="bg-white rounded-2xl border border-gray-100 p-4 mb-8 shadow-sm h-64">
                         <canvas id="annualChart"></canvas>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="floating-year-selector pointer-events-auto" style="backdrop-filter: none; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-            <div class="flex items-center">
-                <button onclick="changeReportYear(-1)" class="w-10 h-8 flex items-center justify-center text-gray-500 active:scale-90 transition-transform"><i class="fas fa-chevron-left"></i></button>
-                <span class="px-3 font-bold text-lg tabular-nums" id="report-year-display">2026</span>
-                <button onclick="changeReportYear(1)" class="w-10 h-8 flex items-center justify-center text-gray-500 active:scale-90 transition-transform"><i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
     </div>
@@ -1157,6 +1146,51 @@
             
             reader.readAsText(file);
         }
+            // --- 赋予年度报告下滑关闭的 iOS 手势 ---
+            const annualSheet = document.getElementById('annual-sheet');
+            const annualScrollArea = document.getElementById('annual-scroll-area');
+            let startY = 0;
+            let currentY = 0;
+
+        annualSheet.addEventListener('touchstart', (e) => {
+            // 只有当内部列表滚动到最顶部时，才触发整个卡片的下拉
+            if (annualScrollArea.scrollTop <= 0) {
+                startY = e.touches[0].clientY;
+            } else {
+                startY = 0;
+            }
+        }, { passive: true });
+
+        annualSheet.addEventListener('touchmove', (e) => {
+            if (startY <= 0) return;
+            currentY = e.touches[0].clientY;
+            const deltaY = currentY - startY;
+            
+            // 手指往下滑动时，让卡片跟着手指移动（取消过渡动画以跟手）
+            if (deltaY > 0) {
+                annualSheet.style.transition = 'none';
+                annualSheet.style.transform = `translateY(${deltaY}px)`;
+            }
+        }, { passive: true });
+
+        annualSheet.addEventListener('touchend', (e) => {
+            if (startY <= 0) return;
+            const deltaY = currentY - startY;
+            // 手指松开，恢复平滑过渡动画
+            annualSheet.style.transition = 'transform 0.4s var(--ios-curve)';
+            
+            // 如果下拉距离超过 100 像素，判定为关闭意图
+            if (deltaY > 100) {
+                closeModal('annual');
+                // 动画结束后重置位置，以便下次正常打开
+                setTimeout(() => { annualSheet.style.transform = ''; }, 400);
+            } else {
+                // 滑动距离不够，卡片弹回原位
+                annualSheet.style.transform = '';
+            }
+            startY = 0;
+        });
+
     </script>
 </body>
 </html>
