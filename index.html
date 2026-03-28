@@ -446,15 +446,7 @@
             </div>
 
             <div class="flex-1 overflow-y-auto p-5" id="annual-scroll-area" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
-                
-                <div class="flex justify-center mb-6">
-                    <div class="bg-gray-200/50 p-1 rounded-xl flex items-center shadow-inner">
-                        <button onclick="changeReportYear(-1)" class="w-10 h-8 flex items-center justify-center text-gray-500 active:scale-90 transition-transform"><i class="fas fa-chevron-left"></i></button>
-                        <span class="px-4 font-bold text-lg tabular-nums" id="report-year-display">2026</span>
-                        <button onclick="changeReportYear(1)" class="w-10 h-8 flex items-center justify-center text-gray-500 active:scale-90 transition-transform"><i class="fas fa-chevron-right"></i></button>
-                    </div>
-                </div>
-
+    
             <div class="animate-fade-in-up" style="animation-delay: 0.1s;">
                 <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">资产变动 (年初 vs 年末)</h3>
                     
@@ -516,9 +508,14 @@
                         <canvas id="annualChart"></canvas>
                     </div>
                 </div>
+            </div> <div class="floating-year-selector flex items-center shadow-lg">
+                <button onclick="changeReportYear(-1)" class="w-12 h-10 flex items-center justify-center text-gray-500 active:scale-90 transition-transform"><i class="fas fa-chevron-left"></i></button>
+                <span class="px-2 font-bold text-xl tabular-nums text-black" id="report-year-display">2026</span>
+                <button onclick="changeReportYear(1)" class="w-12 h-10 flex items-center justify-center text-gray-500 active:scale-90 transition-transform"><i class="fas fa-chevron-right"></i></button>
             </div>
-        </div>
-    </div>
+
+        </div> </div>
+
 
     <script>
         // --- 逻辑层 ---
