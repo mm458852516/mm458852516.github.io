@@ -123,7 +123,27 @@
             border: 1px solid rgba(0,0,0,0.05);
             transition: opacity 0.3s ease;
         }
+
+        /* --- 苹果原生级别的暗黑模式 (Dark Mode) 适配 --- */
+        @media (prefers-color-scheme: dark) {
+            body, html { background-color: #000000; color: #FFFFFF; }
+            .glass-nav { background: rgba(0,0,0,0.7); border-bottom: 0.5px solid #333; }
+            .ios-card, .ios-card-static { background: #1C1C1E; box-shadow: none; border: 1px solid #2C2C2E; }
+            .text-black, h1, h2, h3, span.text-black, p.text-black { color: #FFFFFF !important; }
+            .text-gray-900 { color: #F2F2F7 !important; }
+            .text-gray-500, .text-gray-400 { color: #8E8E93 !important; }
+            .bg-white { background-color: #1C1C1E !important; border-color: #2C2C2E !important; }
+            .bg-\[\#F2F2F7\] { background-color: #000000 !important; }
+            .bg-gray-50, .bg-gray-100, .bg-gray-200 { background-color: #2C2C2E !important; }
+            .border-gray-100, .border-gray-200, .border-gray-200\/50 { border-color: #38383A !important; }
+            .modal-content, #annual-sheet { background-color: #1C1C1E !important; }
+            input, select { color: #FFFFFF !important; }
+            input::placeholder { color: #8E8E93 !important; }
+            #t-category { background-color: #2C2C2E; color: #FFFFFF; border-color: #38383A; }
+            .floating-year-selector { background: rgba(28, 28, 30, 0.9); border: 1px solid rgba(255,255,255,0.1); }
+        }
     </style>
+
 </head>
 <body class="antialiased">
 
@@ -981,7 +1001,7 @@
             annualChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
+                    labels: ['1','2','3','4','5','6','7','8','9','10','11','12'],
                     datasets: [
                         { label: '收入', data: monthlyData.map(d => d.inc), backgroundColor: '#34C759', borderRadius: 4, barPercentage: 0.6 },
                         { label: '支出', data: monthlyData.map(d => d.exp), backgroundColor: '#FF3B30', borderRadius: 4, barPercentage: 0.6 }
@@ -989,7 +1009,13 @@
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    scales: { x: { grid: { display: false } }, y: { display: false } },
+                    scales: { 
+                        x: { 
+                            grid: { display: false },
+                            ticks: { maxRotation: 0, minRotation: 0 } // 强制水平显示，防止倾斜
+                        }, 
+                        y: { display: false } 
+                    },
                     plugins: { legend: { position: 'top', align: 'end' } }
                 }
             });
