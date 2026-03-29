@@ -110,7 +110,7 @@
 
         .floating-year-selector {
             position: fixed;
-            bottom: calc(env(safe-area-inset-bottom) + 30px);
+            bottom: calc(env(safe-area-inset-bottom) + 12px);
             left: 50%;
             transform: translateX(-50%);
             z-index: 70;
@@ -130,9 +130,10 @@
             .glass-nav { background: rgba(0,0,0,0.7); border-bottom: 0.5px solid #333; }
             .ios-card, .ios-card-static { background: #1C1C1E; box-shadow: none; border: 1px solid #2C2C2E; }
             .text-black, h1, h2, h3, span.text-black, p.text-black { color: #FFFFFF !important; }
-            .text-gray-900, .text-gray-700 { color: #F2F2F7 !important; }
-            .text-gray-500, .text-gray-400 { color: #8E8E93 !important; }
+            .text-gray-900, .text-gray-800, .text-gray-700 { color: #F2F2F7 !important; }
+            .text-gray-600, .text-gray-500, .text-gray-400 { color: #8E8E93 !important; }
             .bg-white { background-color: #1C1C1E !important; border-color: #2C2C2E !important; }
+            .bg-gray-50\/50 { background-color: rgba(44, 44, 46, 0.5) !important; }
             .bg-\[\#F2F2F7\] { background-color: #000000 !important; }
             .bg-\[\#F2F2F7\]\/80 { background-color: rgba(28, 28, 30, 0.8) !important; }
             .bg-gray-50, .bg-gray-100, .bg-gray-200, .bg-gray-200\/80 { background-color: #2C2C2E !important; }
@@ -453,7 +454,7 @@
                 <h3 class="text-[22px] font-bold text-black">年度财务报告</h3>
             </div>
 
-            <div class="flex-1 overflow-y-auto p-5" id="annual-scroll-area" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
+            <div class="flex-1 overflow-y-auto p-5" id="annual-scroll-area" style="padding-bottom: calc(env(safe-area-inset-bottom) + 90px);">
     
             <div class="animate-fade-in-up" style="animation-delay: 0.1s;">
                 <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">资产变动 (年初 vs 年末)</h3>
