@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>财务报表 Pro - 年度升级版</title>
+    <title>财务报表</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -179,7 +179,7 @@
         <section>
             <div class="ios-card p-5 flex justify-between items-center relative overflow-hidden active:scale-[0.98] transition-transform duration-300">
                 <div class="z-10">
-                    <p class="text-sm font-medium text-gray-500 mb-1">本月结余 (Cash Flow)</p>
+                    <p class="text-sm font-medium text-gray-500 mb-1">本月结余</p>
                     <p class="text-4xl font-bold text-black tracking-tight" id="cash-flow-display">¥0.00</p>
                 </div>
                 <div class="relative bg-blue-50 h-12 w-12 rounded-full flex items-center justify-center text-blue-500 shadow-sm z-20">
@@ -319,7 +319,7 @@
                 </button>
                 <input type="file" id="importFile" style="display:none" onchange="importData(this)" accept=".json">
             </div>
-            <p class="text-center text-[10px] text-gray-400 mt-8 mb-4">Data stored locally on device</p>
+            <p class="text-center text-[10px] text-gray-400 mt-8 mb-4">数据储存在本地设备</p>
         </section>
     </div>
 
@@ -457,7 +457,7 @@
             <div class="flex-1 overflow-y-auto p-5" id="annual-scroll-area" style="padding-bottom: calc(env(safe-area-inset-bottom) + 32px);">
     
             <div class="animate-fade-in-up" style="animation-delay: 0.1s;">
-                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">资产变动 (年初 vs 年末)</h3>
+                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">资产变动</h3>
                     
                 <div class="grid grid-cols-2 gap-3 mb-4">
                         <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
@@ -493,11 +493,11 @@
                     <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">收支概览</h3>
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                            <p class="text-xs text-green-600 mb-1">年度总收入</p>
+                            <p class="text-xs text-green-600 mb-2">年度总收入</p>
                             <p class="text-xl font-bold text-green-600" id="annual-income">¥0</p>
                         </div>
                         <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                            <p class="text-xs text-red-500 mb-1">年度总支出</p>
+                            <p class="text-xs text-red-500 mb-2">年度总支出</p>
                             <p class="text-xl font-bold text-red-500" id="annual-expense">¥0</p>
                         </div>
                     </div>
