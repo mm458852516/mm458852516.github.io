@@ -752,7 +752,7 @@
             records.reverse().forEach((r, index) => {
                 const div = document.createElement('div');
                 div.className = "bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm mb-2 list-item-anim";
-                div.style.animationDelay = `${index * 0.05}s`;
+                div.style.animationDelay = `${0.3 + index * 0.05}s`;
                 
                 let subLabel = "";
                 if(r.type === 'expense' && r.expenseType === 'fixed') subLabel = ' <span class="text-[10px] border border-red-200 text-red-500 px-1.5 py-0.5 rounded ml-1">固定</span>';
@@ -787,7 +787,7 @@
             activeItems.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = "bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm mb-2 list-item-anim active:scale-[0.98] transition-transform cursor-pointer";
-                div.style.animationDelay = `${index * 0.05}s`;
+                div.style.animationDelay = `${0.3 + index * 0.05}s`;
                 
                 // 点击直接编辑
                 div.onclick = function() {
