@@ -135,7 +135,12 @@
         /* --- 苹果原生级别的暗黑模式 (Dark Mode) 适配 --- */
         @media (prefers-color-scheme: dark) {
             body, html { background-color: #000000; color: #FFFFFF; }
-            .glass-nav { background: rgba(0,0,0,0.7); border-bottom: 0.5px solid #333; }
+            .glass-nav { 
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 0.5px solid #333; 
+            }
             .ios-card, .ios-card-static { background: #1C1C1E; box-shadow: none; border: 1px solid #2C2C2E; }
             .text-black, h1, h2, h3, span.text-black, p.text-black { color: #FFFFFF !important; }
             .text-gray-900, .text-gray-800, .text-gray-700 { color: #F2F2F7 !important; }
@@ -145,7 +150,7 @@
             .bg-\[\#F2F2F7\] { background-color: #000000 !important; }
             .bg-\[\#F2F2F7\]\/80 { background-color: rgba(28, 28, 30, 0.8) !important; }
             .bg-gray-50, .bg-gray-100, .bg-gray-200, .bg-gray-200\/80 { background-color: #2C2C2E !important; }
-            .border-gray-100, .border-gray-200, .border-gray-200\/50 { border-color: #38383A !important; }
+            .border-gray-100, .border-gray-200, .border-gray-200\/50, .divide-gray-100 > * { border-color: #38383A !important;}
             .modal-content, #annual-sheet { background-color: #1C1C1E !important; }
             input, select { color: #FFFFFF !important; background-color: transparent !important; }
             input::placeholder { color: #8E8E93 !important; }
@@ -1011,9 +1016,15 @@
                     `;
                     detailList.appendChild(div);
                 });
-            }
+                
+                // 【修复】如果循环完发现列表依然是空的（说明所有资产为0被跳过了），则补充暂无数据提示
+                if (detailList.innerHTML === '') {
+                    detailList.innerHTML = '<div class="p-4 text-center text-gray-400 text-xs">暂无资产数据</div>';
+                }
+}
 
             const ctx = document.getElementById('annualChart').getContext('2d');
+
             if (annualChartInstance) annualChartInstance.destroy();
 
             annualChartInstance = new Chart(ctx, {
