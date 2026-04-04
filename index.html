@@ -134,12 +134,13 @@
 
         /* --- 苹果原生级别的暗黑模式 (Dark Mode) 适配 --- */
         @media (prefers-color-scheme: dark) {
-            body, html { background-color: #000000; color: #FFFFFF; }
+            body, html { background-color: #000000;
+            color: #FFFFFF; }
             .glass-nav { 
-            background: rgba(0,0,0,0.75);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 0.5px solid #333; 
+                background: #000000 !important; 
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                border-bottom: 0.5px solid #333; 
             }
             .ios-card, .ios-card-static { background: #1C1C1E; box-shadow: none; border: 1px solid #2C2C2E; }
             .text-black, h1, h2, h3, span.text-black, p.text-black { color: #FFFFFF !important; }
@@ -263,14 +264,14 @@
                     <div class="grid grid-cols-2 gap-4 mt-3">
                         <div>
                             <div class="flex justify-between text-[10px] text-gray-500 mb-1">
-                                <span>流动 (现金)</span>
+                                <span>流动 </span>
                                 <span id="val-asset-current">¥0</span>
                             </div>
                             <div class="sub-progress-bg"><div id="bar-asset-current" class="sub-progress-fill bg-blue-400" style="width:0%"></div></div>
                         </div>
                         <div>
                             <div class="flex justify-between text-[10px] text-gray-500 mb-1">
-                                <span>非流动 (房/车)</span>
+                                <span>非流动 </span>
                                 <span id="val-asset-fixed">¥0</span>
                             </div>
                             <div class="sub-progress-bg"><div id="bar-asset-fixed" class="sub-progress-fill bg-blue-800" style="width:0%"></div></div>
@@ -293,14 +294,14 @@
                     <div class="grid grid-cols-2 gap-4 mt-3">
                         <div>
                             <div class="flex justify-between text-[10px] text-gray-500 mb-1">
-                                <span>短期 (信用卡)</span>
+                                <span>短期 </span>
                                 <span id="val-debt-short">¥0</span>
                             </div>
                             <div class="sub-progress-bg"><div id="bar-debt-short" class="sub-progress-fill bg-red-400" style="width:0%"></div></div>
                         </div>
                         <div>
                             <div class="flex justify-between text-[10px] text-gray-500 mb-1">
-                                <span>长期 (房贷)</span>
+                                <span>长期 </span>
                                 <span id="val-debt-long">¥0</span>
                             </div>
                             <div class="sub-progress-bg"><div id="bar-debt-long" class="sub-progress-fill bg-red-800" style="width:0%"></div></div>
@@ -309,7 +310,7 @@
                 </div>
 
                 <div class="p-4 bg-gray-50/50 flex justify-between items-center">
-                    <span class="text-sm font-medium text-gray-500">净资产 (Net Worth)</span>
+                    <span class="text-sm font-medium text-gray-500">净资产 </span>
                     <span class="text-xl font-bold text-gray-900" id="net-worth">¥0</span>
                 </div>
 
