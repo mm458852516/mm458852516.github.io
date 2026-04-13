@@ -151,7 +151,7 @@
             .bg-\[\#F2F2F7\] { background-color: #000000 !important; }
             .bg-\[\#F2F2F7\]\/80 { background-color: rgba(28, 28, 30, 0.8) !important; }
             .bg-gray-50, .bg-gray-100, .bg-gray-200, .bg-gray-200\/80 { background-color: #2C2C2E !important; }
-            .border-gray-100, .border-gray-100\/50, .border-gray-200, .border-gray-200\/50 { border-color: #38383A !important; }
+            .border-gray-100, .border-gray-100\/50, .border-gray-200, .border-gray-200\/50, .divide-gray-100 > :not([hidden]) ~ :not([hidden]) { border-color: #38383A !important; }
             .modal-content, #annual-sheet { background-color: #1C1C1E !important; }
             input, select { color: #FFFFFF !important; background-color: transparent !important; }
             input::placeholder { color: #8E8E93 !important; }
@@ -1183,8 +1183,24 @@
         });
 
         function exportData() {
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(JSON.stringify(financeData));
-            const a = document.createElement('a'); a.href = dataUri; a.download = `FinPro_${new Date().toISOString().slice(0,10)}.json`; a.click();
+            const fileName = `FinPro_${new Date().toISOString().slice(0,10)}.json`;
+            const fileContent = JSON.stringify(financeData);
+            const file = new File([fileContent], fileName, { type: "application/json" });
+
+            // 尝试调用系统原生的分享/保存面板（和恢复数据类似的原生质感）
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                navigator.share({
+                    files: [file],
+                    title: '备份财务数据'
+                }).catch(console.error);
+            } else {
+                // 如果当前设备或浏览器不支持原生面板，则自动降级为原来的直接下载方式
+                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(fileContent);
+                const a = document.createElement('a'); 
+                a.href = dataUri; 
+                a.download = fileName; 
+                a.click();
+            }
         }
 
         // --- 导入逻辑 ---
