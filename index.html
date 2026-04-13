@@ -151,7 +151,7 @@
             .bg-\[\#F2F2F7\] { background-color: #000000 !important; }
             .bg-\[\#F2F2F7\]\/80 { background-color: rgba(28, 28, 30, 0.8) !important; }
             .bg-gray-50, .bg-gray-100, .bg-gray-200, .bg-gray-200\/80 { background-color: #2C2C2E !important; }
-            .border-gray-100, .border-gray-200, .border-gray-200\/50, .divide-gray-100 > * { border-color: #38383A !important;}
+            .border-gray-100, .border-gray-100\/50, .border-gray-200, .border-gray-200\/50 { border-color: #38383A !important; }
             .modal-content, #annual-sheet { background-color: #1C1C1E !important; }
             input, select { color: #FFFFFF !important; background-color: transparent !important; }
             input::placeholder { color: #8E8E93 !important; }
@@ -357,7 +357,7 @@
     <!-- 弹窗：记账 -->
     <div id="modal-transaction" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 modal-overlay" onclick="closeModal('transaction')"></div>
-        <div class="absolute bottom-0 w-full bg-white rounded-t-[28px] p-6 pb-6 modal-content shadow-2xl" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
+        <div id="transaction-sheet" class="absolute bottom-0 w-full bg-white rounded-t-[28px] p-6 pb-6 modal-content shadow-2xl" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
             <div class="w-full flex justify-center -mt-2 mb-6">
                 <div class="w-12 h-1.5 bg-gray-200 rounded-full opacity-50"></div>
             </div>
@@ -410,7 +410,7 @@
     <!-- 弹窗：资产录入 (含修改模式) -->
     <div id="modal-asset_input" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 modal-overlay" onclick="closeModal('asset_input')"></div>
-        <div class="absolute bottom-0 w-full bg-white rounded-t-[28px] p-6 pb-6 modal-content shadow-2xl" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
+        <div id="asset-sheet" class="absolute bottom-0 w-full bg-white rounded-t-[28px] p-6 pb-6 modal-content shadow-2xl" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
             <div class="w-full flex justify-center -mt-2 mb-6">
                 <div class="w-12 h-1.5 bg-gray-200 rounded-full opacity-50"></div>
             </div>
@@ -516,12 +516,12 @@
                         </div>
                     </div>
                     
-                    <div class="bg-black p-5 rounded-2xl mb-8 flex justify-between items-center shadow-lg">
+                    <div class="bg-white p-5 rounded-2xl mb-8 flex justify-between items-center border border-gray-100 shadow-sm">
                         <div>
                             <p class="text-xs text-gray-400 mb-1">年度结余</p>
-                            <p class="text-2xl font-bold text-white" id="annual-balance">¥0</p>
+                            <p class="text-2xl font-bold text-black" id="annual-balance">¥0</p>
                         </div>
-                        <i class="fas fa-piggy-bank text-3xl text-gray-600"></i>
+                        <i class="fas fa-piggy-bank text-3xl text-blue-500"></i>
                     </div>
                 </div>
 
@@ -1270,6 +1270,10 @@
         enableSwipeToClose('annual-sheet', 'annual-scroll-area', 'annual');
         // 激活历史记录及资产清单的下滑关闭
         enableSwipeToClose('history-sheet', 'history-list', 'history');
+        
+        // 激活记账和资产录入的下滑关闭
+        enableSwipeToClose('transaction-sheet', 'transaction-sheet', 'transaction');
+        enableSwipeToClose('asset-sheet', 'asset-sheet', 'asset_input');
 
     </script>
 </body>
