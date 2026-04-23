@@ -118,18 +118,22 @@
 
         .floating-year-selector {
             position: fixed;
-            bottom: calc(env(safe-area-inset-bottom) + 12px);
+            bottom: calc(env(safe-area-inset-bottom) + 20px);
             left: 50%;
             transform: translateX(-50%);
             z-index: 70;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            /* --- 苹果液态玻璃核心代码开始 --- */
+            background: rgba(255, 255, 255, 0.35); /* 更通透的背景 */
+            backdrop-filter: blur(25px) saturate(200%); /* 增加模糊度和色彩饱和度 */
+            -webkit-backdrop-filter: blur(25px) saturate(200%);
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.08), 
+                inset 0 1px 2px rgba(255, 255, 255, 0.9); /* 顶部的反光高光边缘 */
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            /* --- 苹果液态玻璃核心代码结束 --- */
             border-radius: 999px;
-            padding: 4px;
-            border: 1px solid rgba(0,0,0,0.05);
-            transition: opacity 0.3s ease;
+            padding: 6px 4px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
         }
 
         /* --- 苹果原生级别的暗黑模式 (Dark Mode) 适配 --- */
@@ -156,7 +160,14 @@
             input, select { color: #FFFFFF !important; background-color: transparent !important; }
             input::placeholder { color: #8E8E93 !important; }
             #t-category { background-color: #2C2C2E; color: #FFFFFF; border-color: #38383A; }
-            .floating-year-selector { background: rgba(28, 28, 30, 0.9); border: 1px solid rgba(255,255,255,0.1); }
+            .floating-year-selector { 
+                background: rgba(44, 44, 46, 0.45); 
+                border: 1px solid rgba(255, 255, 255, 0.15); 
+                box-shadow: 
+                    0 10px 30px rgba(0, 0, 0, 0.4), 
+                    inset 0 1px 1px rgba(255, 255, 255, 0.1); 
+            }
+
             /* 修复彩色背景块在深色模式下过于刺眼的问题 */
             .bg-blue-50 { background-color: rgba(10, 132, 255, 0.15) !important; }
             .bg-red-50 { background-color: rgba(255, 69, 58, 0.15) !important; }
@@ -531,7 +542,7 @@
                         <canvas id="annualChart"></canvas>
                     </div>
                 </div>
-            </div> <div class="floating-year-selector flex items-center shadow-lg">
+            </div> <div class="floating-year-selector flex items-center">
                 <button onclick="changeReportYear(-1)" class="w-12 h-10 flex items-center justify-center text-gray-500 active:scale-90 transition-transform"><i class="fas fa-chevron-left"></i></button>
                 <span class="px-2 font-bold text-xl tabular-nums text-black" id="report-year-display">2026</span>
                 <button onclick="changeReportYear(1)" class="w-12 h-10 flex items-center justify-center text-gray-500 active:scale-90 transition-transform"><i class="fas fa-chevron-right"></i></button>
