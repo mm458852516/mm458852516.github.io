@@ -17,47 +17,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* --- 基础样式与iOS适配 --- */
-
-        :root {
-            --glass-bg: rgba(255, 255, 255, 0.68);
-            --glass-border: rgba(255, 255, 255, 0.22);
-            --glass-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
-            --glass-highlight: rgba(255, 255, 255, 0.65);
-        }
-
-        .glass-surface {
-            position: relative;
-            overflow: hidden;
-            background: var(--glass-bg);
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--glass-shadow);
-        }
-
-        .glass-surface::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            pointer-events: none;
-            background:
-                linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.08)),
-                radial-gradient(circle at 20% 0%, rgba(255,255,255,0.25), transparent 35%);
-            opacity: 0.9;
-        }
-
-        .glass-surface::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            pointer-events: none;
-            background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent 45%);
-            mix-blend-mode: screen;
-            opacity: 0.7;
-        }
-
         :root {
             --ios-curve: cubic-bezier(0.25, 0.8, 0.25, 1);
             --ios-spring: cubic-bezier(0.175, 0.885, 0.32, 1.1);
@@ -175,13 +134,6 @@
 
         /* --- 苹果原生级别的暗黑模式 (Dark Mode) 适配 --- */
         @media (prefers-color-scheme: dark) {
-
-            .glass-surface {
-                background: rgba(28, 28, 30, 0.72);
-                border: 1px solid rgba(255,255,255,0.08);
-                box-shadow: 0 12px 30px rgba(0,0,0,0.35);
-            }
-
             body, html { background-color: #000000;
             color: #FFFFFF; }
             .glass-nav { 
@@ -219,11 +171,11 @@
 <body class="antialiased">
 
     <!-- 顶部导航栏 -->
-    <div class="glass-nav glass-surface">
+    <div class="glass-nav">
         <div class="px-5 flex justify-between items-center">
             <div class="date-trigger-wrapper btn-ios active:opacity-70">
                 <div class="flex items-center gap-2 py-1">
-                    <h1 class="text-2xl font-semibold tracking-[-0.04em] text-black leading-none" id="current-date">...</h1>
+                    <h1 class="text-3xl font-bold tracking-tight text-black leading-none" id="current-date">...</h1>
                 </div>
                 <input type="month" class="native-date-input" onchange="handleDateChange(this)">
             </div>
@@ -239,10 +191,10 @@
         
         <!-- 本月结余卡片 -->
         <section>
-            <div class="ios-card glass-surface p-5 flex justify-between items-center relative overflow-hidden active:scale-[0.98] transition-transform duration-300">
+            <div class="ios-card p-5 flex justify-between items-center relative overflow-hidden active:scale-[0.98] transition-transform duration-300">
                 <div class="z-10">
                     <p class="text-sm font-medium text-gray-500 mb-1">本月结余</p>
-                    <p class="text-[2.6rem] font-semibold tracking-[-0.05em] text-black" id="cash-flow-display">¥0.00</p>
+                    <p class="text-4xl font-bold text-black tracking-tight" id="cash-flow-display">¥0.00</p>
                 </div>
                 <div class="relative bg-blue-50 h-12 w-12 rounded-full flex items-center justify-center text-blue-500 shadow-sm z-20">
                     <i class="far fa-calendar-alt text-lg"></i>
@@ -255,7 +207,7 @@
         <!-- 收支分析 -->
         <section>
             <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-4 mb-2">收支分析</h2>
-            <div class="ios-card-static glass-surface p-0 overflow-hidden">
+            <div class="ios-card-static p-0 overflow-hidden">
                 <div class="grid grid-cols-2 divide-x divide-gray-100 border-b border-gray-100/50">
                     <div class="p-4 active:bg-gray-50 transition-colors cursor-pointer flex flex-col items-center justify-center" onclick="showHistory('income')">
                         <div class="flex items-center justify-center gap-1 mb-2">
@@ -295,7 +247,7 @@
         <!-- 资产管理 -->
         <section>
             <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-4 mb-2">资产管理</h2>
-            <div class="ios-card-static glass-surface overflow-hidden">
+            <div class="ios-card-static overflow-hidden">
                 
                 <div onclick="showHistory('asset')" class="p-4 border-b border-gray-100 active:bg-gray-50 transition-colors cursor-pointer">
                     <div class="flex items-center justify-between mb-2">
@@ -371,11 +323,11 @@
         <!-- 底部功能 -->
         <section>
             <div class="grid grid-cols-2 gap-4">
-                <button onclick="exportData()" class="ios-card glass-surface p-4 flex flex-col items-center justify-center gap-2 text-gray-600 active:scale-95 transition-transform">
+                <button onclick="exportData()" class="ios-card p-4 flex flex-col items-center justify-center gap-2 text-gray-600 active:scale-95 transition-transform">
                     <i class="fas fa-cloud-download-alt text-2xl text-blue-500"></i>
                     <span class="text-xs font-medium">备份数据</span>
                 </button>
-                <button onclick="document.getElementById('importFile').click()" class="ios-card glass-surface p-4 flex flex-col items-center justify-center gap-2 text-gray-600 active:scale-95 transition-transform">
+                <button onclick="document.getElementById('importFile').click()" class="ios-card p-4 flex flex-col items-center justify-center gap-2 text-gray-600 active:scale-95 transition-transform">
                     <i class="fas fa-cloud-upload-alt text-2xl text-green-500"></i>
                     <span class="text-xs font-medium">恢复数据</span>
                 </button>
@@ -388,7 +340,7 @@
     <!-- 弹窗：历史记录 -->
     <div id="modal-history" class="fixed inset-0 z-[60] hidden">
         <div class="absolute inset-0 modal-overlay" onclick="closeModal('history')"></div>
-        <div class="absolute bottom-0 w-full bg-[#F2F2F7] rounded-t-[28px] h-[85vh] flex flex-col modal-content shadow-2xl" class="glass-surface" id="history-sheet">
+        <div class="absolute bottom-0 w-full bg-[#F2F2F7] rounded-t-[28px] h-[85vh] flex flex-col modal-content shadow-2xl" id="history-sheet">
             <div class="w-full flex justify-center pt-3 pb-1" onclick="closeModal('history')">
                 <div class="w-12 h-1.5 bg-gray-300 rounded-full opacity-50"></div>
             </div>
@@ -405,13 +357,13 @@
     <!-- 弹窗：记账 -->
     <div id="modal-transaction" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 modal-overlay" onclick="closeModal('transaction')"></div>
-        <div class="glass-surface" id="transaction-sheet" class="absolute bottom-0 w-full bg-white rounded-t-[28px] p-6 pb-6 modal-content shadow-2xl" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
+        <div id="transaction-sheet" class="absolute bottom-0 w-full bg-white rounded-t-[28px] p-6 pb-6 modal-content shadow-2xl" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
             <div class="w-full flex justify-center -mt-2 mb-6">
                 <div class="w-12 h-1.5 bg-gray-200 rounded-full opacity-50"></div>
             </div>
             
             <div class="space-y-6">
-                <div class="flex bg-white/40 backdrop-blur-xl border border-white/30 p-1 rounded-xl">
+                <div class="flex bg-gray-100 p-1 rounded-xl">
                     <button onclick="setTransType('expense')" id="btn-expense" class="flex-1 py-2 rounded-lg text-[15px] font-medium shadow-sm bg-white text-black transition-all duration-300">支出</button>
                     <button onclick="setTransType('income')" id="btn-income" class="flex-1 py-2 rounded-lg text-[15px] font-medium text-gray-500 transition-all duration-300">收入</button>
                 </div>
@@ -458,7 +410,7 @@
     <!-- 弹窗：资产录入 (含修改模式) -->
     <div id="modal-asset_input" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 modal-overlay" onclick="closeModal('asset_input')"></div>
-        <div class="glass-surface" id="asset-sheet" class="absolute bottom-0 w-full bg-white rounded-t-[28px] p-6 pb-6 modal-content shadow-2xl" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
+        <div id="asset-sheet" class="absolute bottom-0 w-full bg-white rounded-t-[28px] p-6 pb-6 modal-content shadow-2xl" style="padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
             <div class="w-full flex justify-center -mt-2 mb-6">
                 <div class="w-12 h-1.5 bg-gray-200 rounded-full opacity-50"></div>
             </div>
@@ -467,7 +419,7 @@
                 <h3 class="text-xl font-bold text-center" id="asset-modal-title">资产/负债录入</h3>
                 
                 <!-- 类型切换 (修改模式下禁用) -->
-                <div class="flex bg-white/40 backdrop-blur-xl border border-white/30 p-1 rounded-xl" id="asset-type-switch">
+                <div class="flex bg-gray-100 p-1 rounded-xl" id="asset-type-switch">
                     <button onclick="setAssetType('asset')" id="btn-asset" class="flex-1 py-2 rounded-lg text-[15px] font-medium shadow-sm bg-white text-black transition-all">资产</button>
                     <button onclick="setAssetType('liability')" id="btn-liability" class="flex-1 py-2 rounded-lg text-[15px] font-medium text-gray-500 transition-all">负债</button>
                 </div>
@@ -507,7 +459,7 @@
     <!-- 弹窗：年度报告 -->
     <div id="modal-annual" class="fixed inset-0 z-[60] hidden">
         <div class="absolute inset-0 modal-overlay" onclick="closeModal('annual')"></div>
-        <div class="absolute bottom-0 w-full bg-[#F2F2F7] rounded-t-[28px] h-[90vh] flex flex-col modal-content shadow-2xl" class="glass-surface" id="annual-sheet">
+        <div class="absolute bottom-0 w-full bg-[#F2F2F7] rounded-t-[28px] h-[90vh] flex flex-col modal-content shadow-2xl" id="annual-sheet">
             <div class="w-full flex justify-center pt-3 pb-1">
                 <div class="w-12 h-1.5 bg-gray-300 rounded-full opacity-50"></div>
             </div>
@@ -579,7 +531,7 @@
                         <canvas id="annualChart"></canvas>
                     </div>
                 </div>
-            </div> <div class="floating-year-selector glass-surface flex items-center shadow-lg">
+            </div> <div class="floating-year-selector flex items-center shadow-lg">
                 <button onclick="changeReportYear(-1)" class="w-12 h-10 flex items-center justify-center text-gray-500 active:scale-90 transition-transform"><i class="fas fa-chevron-left"></i></button>
                 <span class="px-2 font-bold text-xl tabular-nums text-black" id="report-year-display">2026</span>
                 <button onclick="changeReportYear(1)" class="w-12 h-10 flex items-center justify-center text-gray-500 active:scale-90 transition-transform"><i class="fas fa-chevron-right"></i></button>
@@ -1120,13 +1072,7 @@
                     datasets: [{ data: Object.values(displayData), backgroundColor: Object.keys(displayData).map(l => colorMap[l]||'#8E8E93'), borderWidth: 0 }]
                 },
                 options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    cutout: '80%',
-                    animation: {
-                        duration: 900,
-                        easing: 'easeOutQuart'
-                    },
+                    responsive: true, maintainAspectRatio: false, cutout: '75%',
                     plugins: { legend: { display: false }, tooltip: { enabled: !isEmpty } }
                 }
             });
